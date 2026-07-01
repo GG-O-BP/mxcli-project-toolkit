@@ -1,0 +1,462 @@
+{
+  "id": "F001",
+  "title": "Payer & Billing Address Registration",
+  "titleZh": "支付方与收款地址登记",
+  "modules": [
+    "M0022_PayerRegist"
+  ],
+  "actors": [
+    "PayerRegisterUser",
+    "SuperUser",
+    "SysAdmin"
+  ],
+  "useCases": [
+    {
+      "id": "UC001",
+      "title": "View Payer Registration List",
+      "titleZh": "查看支付方登记列表",
+      "actors": [
+        "PayerRegisterUser",
+        "SuperUser"
+      ],
+      "preconditions": [
+        "用户已登录系统并具有 PayerRegisterUser 或 SuperUser 角色",
+        "系统中存在支付方登记记录"
+      ],
+      "postconditions": [
+        "系统显示支付方登记申请列表，包含状态和基本信息"
+      ],
+      "mainFlow": [
+        "1. 用户访问 PayerRegistList 页面",
+        "2. 系统根据用户角色过滤并显示支付方登记申请列表",
+        "3. 系统展示每条记录的支付方基本信息及工作流状态（ENWFStatus）",
+        "4. 用户可点击某条记录进入详情页（PayerDetail）"
+      ],
+      "screens": [
+        "PayerRegistList",
+        "PayerDetail"
+      ],
+      "mdlRefs": [
+        "M0022_PayerRegist"
+      ]
+    },
+    {
+      "id": "UC002",
+      "title": "View Payer Registration Detail",
+      "titleZh": "查看支付方登记详情",
+      "actors": [
+        "PayerRegisterUser",
+        "SuperUser"
+      ],
+      "preconditions": [
+        "用户已登录系统并具有相应角色",
+        "指定的支付方登记记录存在（Id 有效）"
+      ],
+      "postconditions": [
+        "系统显示支付方的完整信息，包括客户基本信息、收款地址及销售区域数据"
+      ],
+      "mainFlow": [
+        "1. 用户从列表页或重定向页面跳转至 PayerDetail，传入 Id、RedirectId、In_WfMode 和 In_MessageCd 参数",
+        "2. 系统根据 Id 从 ENPayerDetail、ENPayerCustomerBase、ENPayerAreaData 等外部实体加载支付方详情",
+        "3. 系统根据 In_WfMode 判断当前是否为工作流审批模式，并调整页面展示内容",
+        "4. 系统根据 In_MessageCd 显示对应的消息提示（ENMessageTypeRW）",
+        "5. 用户查阅支付方详细信息"
+      ],
+      "screens": [
+        "PayerDetail"
+      ],
+      "mdlRefs": [
+        "M0022_PayerRegist"
+      ]
+    },
+    {
+      "id": "UC003",
+      "title": "Select Organization for Payer Registration",
+      "titleZh": "选择支付方登记所属组织",
+      "actors": [
+        "PayerRegisterUser",
+        "SuperUser"
+      ],
+      "preconditions": [
+        "用户已登录系统并具有相应角色",
+        "用户已启动支付方登记流程"
+      ],
+      "postconditions": [
+        "用户选定的组织信息被记录，系统引导用户进行后续登记步骤"
+      ],
+      "mainFlow": [
+        "1. 系统跳转至 OrgChoice 页面，传入 RegistUserId 和 RedirectId 参数",
+        "2. 系统从 ENChoiceOrg 和 ENSalesOrganization 加载可选组织列表",
+        "3. 用户从列表中选择所属组织",
+        "4. 系统记录选择结果并根据 RedirectId 重定向至下一步骤"
+      ],
+      "screens": [
+        "OrgChoice",
+        "Redirect"
+      ],
+      "mdlRefs": [
+        "M0022_PayerRegist"
+      ]
+    },
+    {
+      "id": "UC004",
+      "title": "Apply for Payer Registration (Expansion Apply)",
+      "titleZh": "申请支付方登记（扩展申请）",
+      "actors": [
+        "PayerRegisterUser",
+        "SuperUser"
+      ],
+      "preconditions": [
+        "用户已登录系统并具有相应角色",
+        "用户需要为新的销售区域或组织申请支付方扩展登记"
+      ],
+      "postconditions": [
+        "支付方扩展申请信息已提交至工作流（ENWF_APPLICATION），等待审批"
+      ],
+      "mainFlow": [
+        "1. 用户访问 ExpansionApply 页面",
+        "2. 系统展示扩展申请表单，加载相关销售区域（ENSalesAreaData）、客户基本信息（ENTempCustomerBasic）等数据",
+        "3. 用户填写扩展申请所需信息",
+        "4. 用户提交申请",
+        "5. 系统将申请写入工作流（ENWF_APPLICATION、ENWf_Info），并更新工作流状态（ENWFStatus）",
+        "6. 系统重定向至确认页面（PayerConfirmV3）或跳转页面（Redirect）"
+      ],
+      "screens": [
+        "ExpansionApply",
+        "PayerConfirmV3",
+        "Redirect"
+      ],
+      "mdlRefs": [
+        "M0022_PayerRegist"
+      ]
+    },
+    {
+      "id": "UC005",
+      "title": "Confirm Payer Registration",
+      "titleZh": "确认支付方登记信息",
+      "actors": [
+        "PayerRegisterUser",
+        "SuperUser"
+      ],
+      "preconditions": [
+        "用户已完成支付方申请信息填写",
+        "系统已生成待确认的支付方登记草稿（ENTempCustomerBasic、ENTempCustomerCompany、ENTempCustomerSalesOrg）"
+      ],
+      "postconditions": [
+        "支付方登记申请已确认提交，工作流审批流程启动",
+        "临时数据转移至正式数据（ENPayerDetail、ENPayerCustomerBase）"
+      ],
+      "mainFlow": [
+        "1. 系统跳转至 PayerConfirmV3 确认页面",
+        "2. 系统从临时实体（ENTempCustomerBasic、ENTempCustomerCompany、ENTempCustomerSalesOrg）加载待确认数据",
+        "3. 系统调用 PrefixOfAbbreviation 逻辑，根据 CurrencyCode 和 CustomerPricingCode 生成简称前缀",
+        "4. 用户核对所有登记信息，包括支付方基本信息、地址、销售区域等",
+        "5. 用户点击确认提交",
+        "6. 系统将数据写入正式实体并触发工作流审批（ENWF_APPLICATION、ENWf_Info、ENWf_Info_Dtl）",
+        "7. 系统重定向至 Redirect 或 PayerRegistList 页面"
+      ],
+      "screens": [
+        "PayerConfirmV3",
+        "Redirect",
+        "PayerRegistList"
+      ],
+      "mdlRefs": [
+        "M0022_PayerRegist"
+      ]
+    },
+    {
+      "id": "UC006",
+      "title": "Handle Redirect and Error Display",
+      "titleZh": "处理重定向与错误显示",
+      "actors": [
+        "PayerRegisterUser",
+        "SuperUser",
+        "SysAdmin"
+      ],
+      "preconditions": [
+        "用户操作过程中触发重定向或系统检测到异常"
+      ],
+      "postconditions": [
+        "用户被正确引导至目标页面，或错误信息被清晰展示"
+      ],
+      "mainFlow": [
+        "1a. 重定向流程：系统跳转至 Redirect 页面，传入 Id 和 RedirectId 参数，根据 RedirectId 将用户导航至对应功能页面",
+        "1b. 错误流程：系统跳转至 Redirect_Error 页面，传入 ErrorMessage 参数",
+        "2b. 系统在页面上展示错误信息，提示用户操作失败原因",
+        "3b. 用户根据错误提示进行相应处理"
+      ],
+      "screens": [
+        "Redirect",
+        "Redirect_Error"
+      ],
+      "mdlRefs": [
+        "M0022_PayerRegist"
+      ]
+    }
+  ],
+  "dataRequirements": [
+    {
+      "id": "DR001",
+      "title": "支付方详情信息",
+      "entity": "ENPayerDetail",
+      "mdlRef": "M0022_PayerRegist",
+      "keyFields": [
+        {
+          "name": "PayerDetailId",
+          "rule": "支付方详情主键，唯一标识一条支付方登记记录"
+        },
+        {
+          "name": "CustomerCode",
+          "rule": "客户编码，关联 ENPayerCustomerBase"
+        },
+        {
+          "name": "SalesOrganizationId",
+          "rule": "销售组织ID，关联 ENSalesOrganization"
+        }
+      ]
+    },
+    {
+      "id": "DR002",
+      "title": "支付方客户基本信息",
+      "entity": "ENPayerCustomerBase",
+      "mdlRef": "M0022_PayerRegist",
+      "keyFields": [
+        {
+          "name": "CustomerId",
+          "rule": "客户主键，唯一标识支付方客户"
+        },
+        {
+          "name": "CustomerName",
+          "rule": "客户名称，不可为空"
+        },
+        {
+          "name": "CurrencyCode",
+          "rule": "结算货币代码，用于生成简称前缀"
+        }
+      ]
+    },
+    {
+      "id": "DR003",
+      "title": "支付方区域数据",
+      "entity": "ENPayerAreaData",
+      "mdlRef": "M0022_PayerRegist",
+      "keyFields": [
+        {
+          "name": "AreaDataId",
+          "rule": "区域数据主键"
+        },
+        {
+          "name": "PayerDetailId",
+          "rule": "关联支付方详情（ENPayerDetail）"
+        },
+        {
+          "name": "RegionId",
+          "rule": "关联地区（ENRegion）"
+        }
+      ]
+    },
+    {
+      "id": "DR004",
+      "title": "临时客户基本信息",
+      "entity": "ENTempCustomerBasic",
+      "mdlRef": "M0022_PayerRegist",
+      "keyFields": [
+        {
+          "name": "TempId",
+          "rule": "临时记录主键，申请确认后转入正式实体"
+        },
+        {
+          "name": "RegistUserId",
+          "rule": "发起登记的用户ID"
+        },
+        {
+          "name": "Status",
+          "rule": "草稿状态标识，确认提交后更新"
+        }
+      ]
+    },
+    {
+      "id": "DR005",
+      "title": "临时客户公司信息",
+      "entity": "ENTempCustomerCompany",
+      "mdlRef": "M0022_PayerRegist",
+      "keyFields": [
+        {
+          "name": "TempCompanyId",
+          "rule": "临时公司信息主键"
+        },
+        {
+          "name": "TempId",
+          "rule": "关联临时客户基本信息（ENTempCustomerBasic）"
+        },
+        {
+          "name": "ZipCode",
+          "rule": "收款地址邮政编码，关联 ENZipCode"
+        }
+      ]
+    },
+    {
+      "id": "DR006",
+      "title": "临时客户销售组织信息",
+      "entity": "ENTempCustomerSalesOrg",
+      "mdlRef": "M0022_PayerRegist",
+      "keyFields": [
+        {
+          "name": "TempSalesOrgId",
+          "rule": "临时销售组织信息主键"
+        },
+        {
+          "name": "TempId",
+          "rule": "关联临时客户基本信息（ENTempCustomerBasic）"
+        },
+        {
+          "name": "SalesOrganizationId",
+          "rule": "关联销售组织（ENSalesOrganization）"
+        }
+      ]
+    },
+    {
+      "id": "DR007",
+      "title": "工作流申请信息",
+      "entity": "ENWF_APPLICATION",
+      "mdlRef": "M0022_PayerRegist",
+      "keyFields": [
+        {
+          "name": "ApplicationId",
+          "rule": "工作流申请主键"
+        },
+        {
+          "name": "WFStatus",
+          "rule": "工作流状态，关联 ENWFStatus"
+        },
+        {
+          "name": "RegistUserId",
+          "rule": "申请发起用户ID"
+        }
+      ]
+    },
+    {
+      "id": "DR008",
+      "title": "DIM客户基本主数据",
+      "entity": "ENDNIM_CUSTOMER_BASIC",
+      "mdlRef": "M0022_PayerRegist",
+      "keyFields": [
+        {
+          "name": "CUSTOMER_CODE",
+          "rule": "客户编码，物理表主键（ItgrMST.DNIM_CUSTOMER_BASIC）"
+        },
+        {
+          "name": "CUSTOMER_NAME",
+          "rule": "客户名称，不可为空"
+        }
+      ]
+    },
+    {
+      "id": "DR009",
+      "title": "合作伙伴主数据",
+      "entity": "ENDNIM_PARTNER",
+      "mdlRef": "M0022_PayerRegist",
+      "keyFields": [
+        {
+          "name": "PARTNER_CODE",
+          "rule": "合作伙伴编码，物理表主键（OSPQA_MAIN.dbo.DNIM_PARTNER）"
+        },
+        {
+          "name": "PARTNER_NAME",
+          "rule": "合作伙伴名称"
+        }
+      ]
+    },
+    {
+      "id": "DR010",
+      "title": "销售区域数据",
+      "entity": "ENSalesAreaData",
+      "mdlRef": "M0022_PayerRegist",
+      "keyFields": [
+        {
+          "name": "SalesAreaId",
+          "rule": "销售区域主键"
+        },
+        {
+          "name": "SalesOrganizationId",
+          "rule": "关联销售组织（ENSalesOrganization）"
+        },
+        {
+          "name": "CustomerPricingCode",
+          "rule": "客户定价代码，用于生成简称前缀"
+        }
+      ]
+    }
+  ],
+  "businessRules": [
+    {
+      "id": "BR001",
+      "title": "支付方登记需角色授权",
+      "description": "只有具备 PayerRegisterUser 或 SuperUser 角色的用户才能访问支付方登记相关页面（PayerRegistList、PayerDetail、ExpansionApply、PayerConfirmV3、OrgChoice 等），未授权用户将被拒绝访问。",
+      "mdlRef": "M0022_PayerRegist",
+      "enforcedBy": "PayerRegistList, PayerDetail, ExpansionApply, PayerConfirmV3, OrgChoice, Redirect, Redirect_Error（权限配置：RoleReference:BJDyOQIk40KCxu_GmyQaTQ, SystemRole:I1Fm79oZdUu8QBe+dLY9Cg）"
+    },
+    {
+      "id": "BR002",
+      "title": "支付方简称前缀由货币代码和定价代码决定",
+      "description": "在确认支付方登记信息时，系统必须根据客户的货币代码（CurrencyCode）和客户定价代码（CustomerPricingCode）调用 PrefixOfAbbreviation 逻辑，自动生成支付方简称前缀，不得由用户手动填写该前缀。",
+      "mdlRef": "M0022_PayerRegist",
+      "enforcedBy": "Logic: PrefixOfAbbreviation, Screen: PayerConfirmV3"
+    },
+    {
+      "id": "BR003",
+      "title": "登记申请须经工作流审批",
+      "description": "支付方登记申请（含扩展申请）提交后，必须进入工作流审批流程（ENWF_APPLICATION、ENWf_Info、ENWf_Info_Dtl），申请状态须由 ENWFStatus 追踪管理，未经审批不得直接写入正式数据。",
+      "mdlRef": "M0022_PayerRegist",
+      "enforcedBy": "Screen: ExpansionApply, PayerConfirmV3; ExtEntity: ENWF_APPLICATION, ENWf_Info, ENWf_Info_Dtl, ENWFStatus"
+    },
+    {
+      "id": "BR004",
+      "title": "申请详情页需支持工作流模式切换",
+      "description": "PayerDetail 页面接收 In_WfMode 参数，系统需根据该参数判断当前是否处于工作流审批模式，并相应调整页面展示内容（如显示审批操作按钮或仅展示只读信息）。",
+      "mdlRef": "M0022_PayerRegist",
+      "enforcedBy": "Screen: PayerDetail（输入参数 In_WfMode）"
+    },
+    {
+      "id": "BR005",
+      "title": "组织选择为登记前置步骤",
+      "description": "发起支付方登记时，系统必须要求用户通过 OrgChoice 页面选择所属组织（RegistUserId、RedirectId 为必传参数），组织未选定则不能进行后续登记步骤。",
+      "mdlRef": "M0022_PayerRegist",
+      "enforcedBy": "Screen: OrgChoice（输入参数：RegistUserId, RedirectId）; ExtEntity: ENChoiceOrg, ENSalesOrganization"
+    },
+    {
+      "id": "BR006",
+      "title": "错误信息须通过专用页面展示",
+      "description": "系统处理过程中发生异常时，必须将错误信息（ErrorMessage）通过 Redirect_Error 专用页面展示给用户，不得直接在业务页面内嵌展示未处理的系统错误。",
+      "mdlRef": "M0022_PayerRegist",
+      "enforcedBy": "Screen: Redirect_Error（输入参数 ErrorMessage）; ExtEntity: ENExceptionType"
+    },
+    {
+      "id": "BR007",
+      "title": "收款地址须关联有效邮政编码",
+      "description": "临时客户公司信息（ENTempCustomerCompany）中的收款地址邮政编码必须能在 ENZipCode 中查找到对应记录，系统需对邮编有效性进行校验。",
+      "mdlRef": "M0022_PayerRegist",
+      "enforcedBy": "ExtEntity: ENTempCustomerCompany, ENZipCode"
+    }
+  ],
+  "integrations": [
+    {
+      "id": "INT001",
+      "title": "客户基本主数据集成（DNIM_CUSTOMER_BASIC）",
+      "system": "外部集成数据库 ItgrMST",
+      "direction": "inbound",
+      "description": "系统从外部集成数据库（ItgrMST）的 DNIM_CUSTOMER_BASIC 表读取客户基本主数据，用于支付方登记时匹配和验证客户信息。",
+      "extEntity": "ENDNIM_CUSTOMER_BASIC",
+      "mdlRef": "M0022_PayerRegist"
+    },
+    {
+      "id": "INT002",
+      "title": "合作伙伴主数据集成（DNIM_PARTNER）",
+      "system": "外部数据库 OSPQA_MAIN",
+      "direction": "inbound",
+      "description": "系统从外部数据库（OSPQA_MAIN.dbo.DNIM_PARTNER）读取合作伙伴信息，用于支付方登记过程中关联和验证合作伙伴数据。",
+      "extEntity": "ENDNIM_PARTNER",
+      "mdlRef": "M0022_PayerRegist"
+    }
+  ]
+}
