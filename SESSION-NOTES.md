@@ -1,12 +1,12 @@
 # mxcli Project Toolkit — Session Notes
 **Date:** 2026-07-01
-**Project origin:** Macnica-TestRunOS-main (M-0022 OutSystems → Mendix migration POC)
+**Project origin:** Apex-TestRunOS-main (M-0022 OutSystems → Mendix migration POC)
 
 ---
 
 ## What This Toolkit Is
 
-A collection of reusable assets built during the Macnica M-0022 POC that should travel
+A collection of reusable assets built during the Apex M-0022 POC that should travel
 to every new mxcli project. Not project-specific — universal mxcli/Mendix knowledge.
 
 ---
@@ -73,7 +73,7 @@ The extractors + skill files are a reusable toolkit for any OS→Mendix migratio
 os-migration-toolkit/
 ├── skills/
 │   └── os-xml-schema.md        ← teaches Claude OS 11 XML format (NOT YET WRITTEN)
-├── extractors/                 ← FULLY BUILT in Macnica-TestRunOS-main/extraction/
+├── extractors/                 ← FULLY BUILT in Apex-TestRunOS-main/extraction/
 │   ├── xml-extractor.js        (1058 lines, portable)
 │   ├── cs-extractor.js
 │   ├── doc-extractor.py
@@ -92,25 +92,25 @@ os-migration-toolkit/
 - `learned-page-patterns.md` — button captions, widget reference format
 - `learned-process.md` — Studio Pro handoff conventions
 - `learned-db-assertions.md` — PostgreSQL direct query workaround (M2EE token issue)
-- `learned-skill-migrate-general.md` — full migration skill with Macnica additions baked in
+- `learned-skill-migrate-general.md` — full migration skill with Apex additions baked in
 - `learned-skill-scope-delta.md`
 - `learned-skill-ux-audit.md`
 
 **bug-logs/**:
 - `mxcli-bugs.md` — UNIVERSAL: BUG-01 (drop attribute corrupts MPR), BUG-02 (cross-module
   association corrupts MPR), BUG-15b (XPath not stored correctly). Hits any mxcli project.
-- `bug-log-macnica-m0022.md` — project-specific but serves as FORMAT REFERENCE:
+- `bug-log-apex-m0022.md` — project-specific but serves as FORMAT REFERENCE:
   symptom → evidence → root cause → suggested fix, never implement without approval
 
 **process/**:
 - `process-learnings.md` — retrospective written to share with team. What worked
   (MDL scripting, stub architecture, session memory), what didn't (page coverage tracked
   at wrong granularity, design docs used as reference not checklist)
-- `test-plan-macnica-m0022.md` — test plan format reference
+- `test-plan-apex-m0022.md` — test plan format reference
 
 ### 5. Files Copied Elsewhere
 
-- Share/ (79MB) + Omnext blueprints (90MB) → copied to Macnica-TestRunOS-11.2-Upgrade/
+- Share/ (79MB) + Omnext blueprints (90MB) → copied to Apex-TestRunOS-11.2-Upgrade/
 
 ### 6. What Still Needs to Be Built
 
@@ -122,7 +122,7 @@ os-migration-toolkit/
 | MDL cookbook | High | Standalone copy-paste examples of complex patterns (NPE form flow, cross-module retrieve, stub with replacement, idempotent seed) |
 | E2E harness skill | Medium | "How to build E2E tests after a phase" — methodology we developed: widget discovery → suite structure → helpers.js pattern → DB assertions → bug format → gap report |
 | `error-handling-process.md` | Medium | One-pager: when to stop and log vs fix inline, bug format, "never implement without approval" rule |
-| Clean `run.js` | Low | Current one reads config.json with hardcoded Macnica paths — needs `--source ./source/xml` CLI version for demo |
+| Clean `run.js` | Low | Current one reads config.json with hardcoded Apex paths — needs `--source ./source/xml` CLI version for demo |
 
 ### 7. E2E Testing Approach (methodology, not yet a skill file)
 
@@ -138,7 +138,7 @@ What we developed across sessions:
 
 ---
 
-## Key Source Locations (Macnica-TestRunOS-main)
+## Key Source Locations (Apex-TestRunOS-main)
 
 | What | Where |
 |------|-------|
@@ -147,7 +147,7 @@ What we developed across sessions:
 | KB files | extraction/knowledge-base/share/ |
 | BRD JSON | extraction/knowledge-base/brd/ |
 | Extraction log | Maurits-docs/decisions/EXTRACTION_LOG.md |
-| OS XML source | Omnext_macnica_payerbillingaddressregistration_202605070228_Blueprints/ |
+| OS XML source | Omnext_apex_payerbillingaddressregistration_202605070228_Blueprints/ |
 | E2E tests | tests/e2e-01 through e2e-05 + helpers.js |
 | Test plan | docs/active/test-plan.md |
 | Process learnings | docs/archive/process-learnings.md |
