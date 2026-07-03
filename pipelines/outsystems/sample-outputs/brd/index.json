@@ -1,0 +1,158 @@
+{
+  "version": "1.0",
+  "generated": "2026-05-11",
+  "functions": [
+    {
+      "id": "F001",
+      "title": "Payer & Billing Address Registration",
+      "titleZh": "支付方与收款地址登记",
+      "file": "F001-payer-registration.brd.json",
+      "modules": [
+        "M0022_PayerRegist"
+      ],
+      "summary": "Core business function for registering and managing payer/billing entities"
+    },
+    {
+      "id": "F002",
+      "title": "Approval Workflow Management",
+      "titleZh": "审批工作流管理",
+      "file": "F002-approval-workflow.brd.json",
+      "modules": [
+        "COM_WF",
+        "WFManagement_RWCW"
+      ],
+      "summary": "Multi-step approval workflows for business entity registration and changes"
+    },
+    {
+      "id": "F003",
+      "title": "Master Data Management",
+      "titleZh": "主数据管理",
+      "file": "F003-master-data.brd.json",
+      "modules": [
+        "SAPCustomerMaster_CW",
+        "SAPVendorMaster_CW",
+        "RegionMaster_CW",
+        "ZipCodeMaster_CW",
+        "DepartmentMaster_CW",
+        "PaymentTerms_CW",
+        "C0064_DepositAccountMaster_CW"
+      ],
+      "summary": "Reference data management: regions, postal codes, departments, payment terms, bank accounts"
+    },
+    {
+      "id": "F004",
+      "title": "Corporate & Business Search",
+      "titleZh": "法人与业务搜索",
+      "file": "F004-corporate-search.brd.json",
+      "modules": [
+        "CorporationSearch_CW",
+        "C0032_ControlMaterialGroupSearch",
+        "COM_ZA"
+      ],
+      "summary": "Search and lookup of corporate entities and control material groups"
+    },
+    {
+      "id": "F005",
+      "title": "SAP Integration Layer",
+      "titleZh": "SAP集成层",
+      "file": "F005-sap-integration.brd.json",
+      "modules": [
+        "EmployeeService_CS",
+        "EmployeeService_RWCW"
+      ],
+      "summary": "Integration with SAP systems: employee data, customer/vendor master sync"
+    },
+    {
+      "id": "F006",
+      "title": "Common Components",
+      "titleZh": "公共组件",
+      "file": "F006-common-components.brd.json",
+      "modules": [
+        "CommonCategory_CW"
+      ],
+      "summary": "Shared UI components and category management used across all functions"
+    },
+    {
+      "id": "F007",
+      "title": "Contractor Registration",
+      "titleZh": "承包商注册",
+      "file": "F007-contractor-registration.brd.json",
+      "modules": [
+        "ContractorRegistration_BL",
+        "ContractorRegistration_CS",
+        "ContractorRegistration_VE",
+        "ContractorRegistration_API_SAP",
+        "ContractorExpansion_CS"
+      ],
+      "summary": "End-to-end contractor onboarding: registration, validation, SAP sync, and expansion management"
+    },
+    {
+      "id": "F008",
+      "title": "End Customer Registration",
+      "titleZh": "终端客户注册",
+      "file": "F008-end-customer-registration.brd.json",
+      "modules": [
+        "EndCustomerRegistration_BL",
+        "EndCustomerRegistration_CS",
+        "EndCustomerRegistration_VE",
+        "EndCustomerRegistration_API_SAP"
+      ],
+      "summary": "End customer registration and lifecycle management with SAP integration"
+    },
+    {
+      "id": "F009",
+      "title": "Shipment Registration",
+      "titleZh": "货运注册",
+      "file": "F009-shipment-registration.brd.json",
+      "modules": [
+        "ShipmentRegistration_BL",
+        "ShipmentRegistration_CS",
+        "ShipmentRegistration_VE",
+        "ShipmentRegistration_API_SAP"
+      ],
+      "summary": "Shipment record registration and SAP logistics integration"
+    },
+    {
+      "id": "F010",
+      "title": "Workflow Backend Services",
+      "titleZh": "工作流后端服务",
+      "file": "F010-workflow-backend.brd.json",
+      "modules": [
+        "WFManagement_CS",
+        "WFManagement_API",
+        "WFManagement_Email",
+        "COM_WF_CONST",
+        "COM_WF_DAO",
+        "COM_BL",
+        "COM_DAO"
+      ],
+      "summary": "Core workflow engine: state machine, email notifications, DAO layer, and shared business logic"
+    },
+    {
+      "id": "F011",
+      "title": "Customer Common Services",
+      "titleZh": "客户公共服务层",
+      "file": "F011-customer-common.brd.json",
+      "modules": [
+        "CustomerAppCommon_CS",
+        "CustomerAppCommon_CW",
+        "CustomerAppCommon_VE",
+        "CustomerAppCommon_API",
+        "CustomerAppCommon_API_SAP"
+      ],
+      "summary": "Shared customer-facing services: data access, API facade, SAP customer sync"
+    },
+    {
+      "id": "F012",
+      "title": "Payer Registration Backend",
+      "titleZh": "支付方注册后端服务",
+      "file": "F012-payer-backend.brd.json",
+      "modules": [
+        "PayerRegist_CS",
+        "COM_CONST",
+        "COM_SAIBAN"
+      ],
+      "summary": "Server-side logic for payer registration: numbering, constants, and core service layer"
+    }
+  ]
+}
