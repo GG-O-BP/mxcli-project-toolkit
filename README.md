@@ -6,20 +6,20 @@ OS 마이그레이션, Java/Angular 마이그레이션, 기타 고객 통합 작
 
 ---
 
-## ⚠️ Critical rule: never screenshot or audit a stale build
+## ⚠️ 핵심 규칙: 오래된(stale) 빌드는 절대 스크린샷하거나 감사하지 말 것
 
-`mxcli exec` writes to the `.mpr` model file, but the **browser serves a JS bundle compiled by Studio Pro — not the raw model**. After any `mxcli exec`, the browser still shows the *old* build until SP recompiles. Screenshots taken before SP recompiles are worthless for UX audits and test verification.
+`mxcli exec`는 `.mpr` 모델 파일에 기록하지만, **브라우저가 서빙하는 것은 Studio Pro가 컴파일한 JS 번들이지 — 원본 모델이 아닙니다**. `mxcli exec`를 실행한 뒤에도 SP가 재컴파일하기 전까지 브라우저는 여전히 *이전* 빌드를 보여줍니다. SP 재컴파일 전에 찍은 스크린샷은 UX 감사와 테스트 검증에 아무 가치가 없습니다.
 
-**Mandatory protocol before any screenshot, visual review, or UI test:**
+**스크린샷, 시각적 리뷰, UI 테스트 전에 반드시 지켜야 할 프로토콜:**
 
-1. Run `mxcli exec` as usual
-2. Fully restart Studio Pro: `pkill -9 -f "Contents/MacOS/studiopro" && rm -f *.mpr.lock && open -a "Mendix Studio Pro X.Y.Z" YourProject.mpr`
-   - `open file.mpr` (bare) only **foregrounds** an already-running SP and can trigger macOS's version-selector popup — it does NOT reload the model. Always use `open -a "..."` with the full app name, and always `pkill -9` first.
-3. Click **Run Locally** in SP and wait for compilation to finish
-4. Confirm the app is live: `curl -s -o /dev/null -w "%{http_code}" http://localhost:PORT/login.html` → `200`
-5. **Only then** take screenshots or run UI assertions
+1. 평소처럼 `mxcli exec` 실행
+2. Studio Pro 완전 재시작: `pkill -9 -f "Contents/MacOS/studiopro" && rm -f *.mpr.lock && open -a "Mendix Studio Pro X.Y.Z" YourProject.mpr`
+   - (옵션 없이) `open file.mpr`만 실행하면 이미 실행 중인 SP를 **앞으로 가져올 뿐**이며 macOS의 버전 선택 팝업을 띄울 수 있습니다 — 모델을 다시 로드하지 않습니다. 항상 전체 앱 이름과 함께 `open -a "..."`를 사용하고, 항상 `pkill -9`를 먼저 실행하세요.
+3. SP에서 **Run Locally**를 클릭하고 컴파일이 끝날 때까지 대기
+4. 앱이 살아있는지 확인: `curl -s -o /dev/null -w "%{http_code}" http://localhost:PORT/login.html` → `200`
+5. **그런 다음에야** 스크린샷을 찍거나 UI 검증을 실행
 
-**Add this rule to your project's CLAUDE.md** when setting up a new project so every agent session is bound by it. Copy the "Screenshot & UX audit rule" section from any existing project's CLAUDE.md as a template.
+**새 프로젝트를 설정할 때 이 규칙을 그 프로젝트의 CLAUDE.md에 추가하세요** — 모든 에이전트 세션이 이 규칙에 구속되도록. 기존 프로젝트 CLAUDE.md의 "Screenshot & UX audit rule" 섹션을 템플릿으로 복사하면 됩니다.
 
 ---
 
@@ -58,30 +58,30 @@ OS 마이그레이션, Java/Angular 마이그레이션, 기타 고객 통합 작
 
 **0단계(선별)는 형식적 절차가 아니라 게이트입니다.** 이 앱이 추출 파이프라인을 돌릴 만큼 큰지부터 판단하고(작은 앱은 수동 `assess-migration.md` + 수기 BRD로 바로 건너뜀), 기존 추출기/매퍼가 이 소스 스택을 커버하는지 아니면 새로 만들어야 하는지 확인하며, 대규모 소스라면 전체를 한 번에 처리하는 대신 한정된 범위의 부분집합을 권고합니다. 또한 앱이 여러 개의 Mendix 앱으로 나눠야 할 만큼 큰지에 대한 질문도 (결정하지는 않고) 표시해 두는데, 이 질문은 3단계의 모듈 경계 작업 전에 반드시 해결되어야 합니다. 2단계(BRD 생성)는 이 단계가 승인되기 전에는 시작하지 않습니다.
 
-### How `assess-migration` and the extraction pipeline complement each other
+### `assess-migration`과 추출 파이프라인이 서로를 보완하는 방식
 
-These are two tools for the same stage — they work together, not instead of each other:
+이 둘은 같은 단계를 위한 두 가지 도구입니다 — 서로를 대체하는 것이 아니라 함께 사용합니다:
 
-| Tool | What it does | When to use it |
+| 도구 | 하는 일 | 사용 시점 |
 |------|-------------|----------------|
-| `assess-migration.md` | AI-guided manual inventory: reads source files, produces a human-readable markdown report covering entities, business logic, integrations, security, and migration risks. | Always — for small apps this is sufficient on its own; for large apps it provides the human-readable layer on top of the pipeline output. Run it before or after the extraction pipeline. |
-| ``outsystems/`) | Automated AST-based extraction: parses source code into normalized KB JSON, runs BRD mappers, generates a per-module BRD and HTML report. | Medium/large apps where manual reading would miss classes or where you need machine-processable output for BRD generation. |
+| `assess-migration.md` | AI 주도 수동 인벤토리: 소스 파일을 읽고 엔티티, 비즈니스 로직, 연동, 보안, 마이그레이션 리스크를 다루는 사람이 읽기 좋은 마크다운 보고서를 생성합니다. | 항상 — 작은 앱은 이것만으로 충분하고, 큰 앱에서는 파이프라인 출력 위에 사람이 읽을 수 있는 레이어를 제공합니다. 추출 파이프라인 전이나 후에 실행하세요. |
+| 추출 파이프라인 (`pipelines/java-angular/` · `pipelines/outsystems/`) | AST 기반 자동 추출: 소스 코드를 정규화된 KB JSON으로 파싱하고, BRD 매퍼를 실행하며, 모듈별 BRD와 HTML 보고서를 생성합니다. | 수동으로 읽으면 클래스를 놓칠 수 있는 중대형 앱, 또는 BRD 생성을 위해 기계가 처리할 수 있는 출력이 필요한 경우. |
 
-**The correct combined flow for a medium/large Java/Spring app:**
+**중대형 Java/Spring 앱의 올바른 결합 흐름:**
 
 ```
-assess-migration.md          ←  AI reads source, produces markdown triage report
+assess-migration.md          ←  AI가 소스를 읽고 마크다운 선별 보고서 생성
         +
-java-extractor.js (Phase 2)  ←  AST parser extracts all entities/logic/endpoints → KB JSON
+java-extractor.js (Phase 2)  ←  AST 파서가 모든 엔티티/로직/엔드포인트 추출 → KB JSON
         +
-BRD mappers (Phase 3)        ←  KB JSON → structured BRD per module
+BRD 매퍼 (Phase 3)           ←  KB JSON → 모듈별 구조화된 BRD
         ↓
-source-triage.md             ←  human reviews both outputs, signs off on scope + approach
+source-triage.md             ←  사람이 두 출력을 모두 검토하고 범위 + 접근 방식 승인
         ↓
-stages 1–6 proceed
+1–6단계 진행
 ```
 
-`assess-migration.md`'s output feeds `source-triage.md`'s coverage matrix (Step 3) — it tells you *what* is in the source. The extraction pipeline tells you the same thing in machine-readable form. Together they cross-validate each other: discrepancies between the two (e.g. the AI found a rule the extractor missed, or the extractor found 40 entities the AI only sampled 15 of) are exactly the gaps `source-triage.md` is designed to surface before Phase 2 BRDs are generated.
+`assess-migration.md`의 출력은 `source-triage.md`의 커버리지 매트릭스(Step 3)에 입력됩니다 — 소스에 *무엇이* 있는지 알려주는 것입니다. 추출 파이프라인은 같은 내용을 기계가 읽을 수 있는 형태로 알려줍니다. 이 둘은 서로를 교차 검증합니다: 둘 사이의 불일치(예: AI는 찾았는데 추출기가 놓친 규칙, 또는 추출기는 엔티티 40개를 찾았는데 AI는 15개만 샘플링한 경우)가 바로 `source-triage.md`가 Phase 2 BRD 생성 전에 드러내도록 설계된 간극입니다.
 
 **1단계(분석)**는 순서에 상관없이 진행할 수 있는 두 개의 독립적인 경로로 이루어집니다: 경로 A는 소스 코드에서 곧바로 구조를 추출하고(XML/Java/C#/SQL → JSON), 경로 B는 비즈니스 문서에서 구조를 추출합니다(Excel/Word/PDF/PPTX → KB 마크다운). 두 경로 모두 동일한 병합 단계로 합류합니다.
 
