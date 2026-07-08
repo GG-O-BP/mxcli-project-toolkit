@@ -100,7 +100,7 @@ mxcli-project-toolkit/
 | 파일 | 역할 |
 |------|------|
 | `migration-pipeline.md` | 전체 파이프라인 오케스트레이션 가이드(Phase 1~7). 플랫폼 식별부터 MDL 생성까지의 의존성 흐름 정의 |
-| `source-triage.md` | Phase 2/3 전 **필수 게이트**: 수동/파이프라인 재사용/신규 구축 결정, 커버리지 매트릭스, 범위 추천(사용자 승인 필수) |
+| `source-triage.md` | Phase 2/3 전 **필수 게이트**: 파이프라인 재사용/신규 구축 결정(extractor는 앱 크기와 무관하게 항상 세움), 커버리지 매트릭스, 범위 추천(사용자 승인 필수) |
 | `assess-migration.md` | 수동 기술 평가 템플릿: 기술 스택·데이터 모델·비즈니스 로직·통합·보안을 표로 인벤토리 |
 | `migrate-general.md` | 소스 무관 마이그레이션 기초: 설계 순서(도메인→페이지 스케치→로직), 레이어화 스크립트, Stub 패턴, 명명 규칙(`ACT_`/`GET_`/`VAL_`/`SUB_`/`STUB_`) |
 | `migrate-outsystems.md` | OutSystems 특화 가이드: XML 추출 → BRD 스캐폴딩 프롬프트 시퀀스 |
@@ -212,7 +212,7 @@ Phase 3  BRD 생성     node run.js 3   모듈별로 5개 매퍼 실행 → {mod
 ## 7. 전 세션에 적용되는 절대 규칙 두 가지
 
 1. **Stale 빌드 금지** — `mxcli exec`는 `.mpr` 모델에 기록할 뿐이고, 브라우저가 서빙하는 것은 Studio Pro가 컴파일한 JS 번들입니다. 따라서 스크린샷·시각 리뷰·UI 테스트 전에 반드시: Studio Pro 완전 재시작(`pkill -9` 후 `open -a`) → **Run Locally** 완료 대기 → HTTP 200 확인. 이 규칙은 새 프로젝트의 `CLAUDE.md`에 복사해 넣어야 합니다.
-2. **Baseline routing 명시 참조** — 다음 4가지는 상황 기반 발견에 맡기지 않고 모든 프로젝트 `CLAUDE.md`가 직접 참조해야 합니다: `learned-microflow-patterns.md`(마이크로플로우 작성 전반), `bug-logs/mxcli-bugs.md`(mxcli 특이 동작 진단), `agent-roles.md`(프로젝트 시작 시 서브에이전트 구성), `source-triage.md`(BRD 생성 전 추출 여부 판단).
+2. **Baseline routing 명시 참조** — 다음 4가지는 상황 기반 발견에 맡기지 않고 모든 프로젝트 `CLAUDE.md`가 직접 참조해야 합니다: `learned-microflow-patterns.md`(마이크로플로우 작성 전반), `bug-logs/mxcli-bugs.md`(mxcli 특이 동작 진단), `agent-roles.md`(프로젝트 시작 시 서브에이전트 구성), `source-triage.md`(BRD 생성 전 추출 파이프라인 선택 — 재사용 vs 신규 구축).
 
 ---
 

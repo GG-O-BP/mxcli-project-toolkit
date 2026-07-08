@@ -1,5 +1,5 @@
-# Source Triage — Coverage, Scope, and the Go/No-Go Gate Before Extraction
-**Purpose:** Before running any extractor or generating any BRD, decide whether this toolkit's pipelines actually cover the source stack, whether automated extraction is even warranted at this app's size, and — if the source is large — recommend a bounded scope subset instead of processing everything at once.
+# Source Triage — Coverage, Scope, and the Pipeline-Choice Gate Before Extraction
+**Purpose:** Before running any extractor or generating any BRD, decide whether this toolkit's pipelines actually cover the source stack, whether to reuse an existing pipeline or build a new one (an extraction pipeline is always stood up, regardless of app size), and — if the source is large — recommend a bounded scope subset instead of processing everything at once.
 **Upstream:** `migration-pipeline.md` Phase 1 (Source Analysis) — run this immediately after identifying the platform (1.1) and before scoping the extraction (1.3).
 **Downstream:** `migration-pipeline.md` Phase 2/3 (extraction + BRD scaffolding) — **gated** on this skill's output. `modularize-domain.md` (module boundaries within *one* app — assumes the "how many apps" question this skill raises is already answered).
 **Companion:** `assess-migration.md` (the manual technical/functional inventory this skill's coverage matrix checks against), `qa-loop-goal-pattern.md` (how to validate a newly-built extractor once this triage says one is needed).
@@ -9,7 +9,7 @@
 ## When to Use This Skill
 
 - Starting a migration from a new or unfamiliar source stack
-- Deciding whether to build a new extractor, reuse an existing pipeline (`pipelines/outsystems/`, `pipelines/java-angular/`), or skip automation entirely
+- Deciding whether to build a new extractor or reuse an existing pipeline (`pipelines/outsystems/`, `pipelines/java-angular/`) — extraction is always automated regardless of app size; the open question is which pipeline
 - The source app is large enough that "migrate everything at once" feels risky, or big enough that even module-level decomposition (`modularize-domain.md`) might not be sufficient
 - You're about to run `node run.js 3` (BRD scaffolding) on a stack nobody has validated extraction quality for yet
 
@@ -17,21 +17,20 @@
 
 ## Core Principle
 
-**Do not generate BRDs, let alone start the Mendix build, until this triage produces three things:** an extraction-approach decision, a coverage/gap list, and — if the source is large — a bounded scope recommendation. Running Phase 3 before this is settled produces BRDs for a scope nobody agreed to, from a pipeline nobody confirmed is reliable for this stack.
+**Do not generate BRDs, let alone start the Mendix build, until this triage produces three things:** an extraction-pipeline decision (reuse vs build), a coverage/gap list, and — if the source is large — a bounded scope recommendation. Running Phase 3 before this is settled produces BRDs for a scope nobody agreed to, from a pipeline nobody confirmed is reliable for this stack.
 
 ---
 
-## Step 1: Does This App Need an Extraction Pipeline At All?
+## Step 1: Which Extraction Pipeline?
 
-Not every migration earns back the cost of the JSON extraction machinery. Decide explicitly — don't default into building one because that's what the last project did:
+**Every migration stands up the JSON extraction machinery — app size is never a reason to skip it.** A small app still gets an extractor (kept proportionally minimal); `assess-migration.md`'s manual inventory complements the extraction output, it never replaces it. Decide explicitly which pipeline that is:
 
 | Signal | Lean toward |
 |---|---|
-| Small app (rough guide: well under ~20 entities, ~20 screens, a handful of services/modules total) | **Manual-only** — walk `assess-migration.md`'s inventory by hand and author the BRD directly. Standing up an extractor for an app this size is more setup work than the automation saves. |
-| Medium/large app, source platform already covered by `pipelines/outsystems/` or `pipelines/java-angular/` | **Reuse existing pipeline** — run Phase 2 as documented. |
-| Medium/large app, source platform matches nothing in `migration-pipeline.md` 1.1's platform table | **Build new pipeline** — a real investment; confirm the size justifies it before starting. |
+| Source platform already covered by `pipelines/outsystems/` or `pipelines/java-angular/` | **Reuse existing pipeline** — run Phase 2 as documented, whatever the app's size. |
+| Source platform matches nothing in `migration-pipeline.md` 1.1's platform table | **Build new pipeline** — always, regardless of app size; for a small app, scale the extractor down (e.g. one minimal extractor per source shape) rather than skipping it. |
 
-Record the decision explicitly as one of: **Manual-only / Reuse existing pipeline / Build new pipeline.** If "build new," `qa-loop-goal-pattern.md` governs validating the new extractor/linker/mapper against real source until output quality is genuinely high — don't skip straight to trusting its first run, and don't fold pipeline-development time into the migration timeline as if it were a fixed cost.
+Record the decision explicitly as one of: **Reuse existing pipeline / Build new pipeline.** If "build new," `qa-loop-goal-pattern.md` governs validating the new extractor/linker/mapper against real source until output quality is genuinely high — don't skip straight to trusting its first run, and don't fold pipeline-development time into the migration timeline as if it were a fixed cost.
 
 ---
 
@@ -53,15 +52,15 @@ Per business capability, answer the questions that decide whether its BRD comes 
 - Can this be extracted automatically (does an extractor for this source shape exist)?
 - Does a mapper exist to turn that extraction into a BRD?
 - Is the output reliable enough to trust without heavy rework (check against `migration-pipeline.md` Phase 2's quality checklist once a sample run exists)?
-- If not: does this need a new extractor, a new mapper, or is it just better done manually?
+- If not: does this need a new extractor or a new mapper? (Build the missing piece — a coverage gap is a build item, not a reason to fall back to manual-only analysis.)
 
 | Capability | Extractable? | Mapper → BRD? | Reliable? | Verdict |
 |---|---|---|---|---|
 | e.g. Order Management | Yes (Java extractor) | Yes (`domain-entity-mapper`, `microflow-mapper`) | Yes — sample checked | **Ready** |
-| e.g. Reporting (JasperReports) | No extractor for this | — | — | **Manual** |
+| e.g. Reporting (JasperReports) | No extractor for this yet | — | — | **Build** — new extractor needed |
 | e.g. Legacy batch jobs | Extracts fine | No mapper for cron/batch shape yet | Untested | **Extract-only** — needs a mapper built |
 
-Verdict vocabulary (mirrors `architecture-blueprint.md`'s fit-gap vocabulary on purpose, so the two stay legible together): **Ready** (extract + map today, trust the output) · **Extract-only** (JSON extracts fine, no mapper yet) · **Manual** (skip automation, write this capability's BRD by hand) · **Defer** (out of scope for this phase, revisit later) · **Unknown** (can't assess yet — needs a spike).
+Verdict vocabulary (mirrors `architecture-blueprint.md`'s fit-gap vocabulary on purpose, so the two stay legible together): **Ready** (extract + map today, trust the output) · **Extract-only** (JSON extracts fine, no mapper yet) · **Build** (no extractor/mapper for this shape yet — stand one up before Phase 2; never downgrade to hand-written BRDs because the capability is small) · **Defer** (out of scope for this phase, revisit later) · **Unknown** (can't assess yet — needs a spike).
 
 ---
 
@@ -96,8 +95,8 @@ If flagged, resolve "one app or several" as its own open issue **before** `modul
 # Source Triage: [Application Name]
 
 ## Extraction Approach
-Decision: Manual-only / Reuse existing pipeline (<which>) / Build new pipeline
-Reasoning: [size, stack match, effort tradeoff]
+Decision: Reuse existing pipeline (<which>) / Build new pipeline
+Reasoning: [stack match, reuse-vs-build tradeoff — app size never justifies skipping extraction]
 
 ## Business Capability Map
 [Step 2 table]
@@ -119,7 +118,7 @@ Confirmed by: [user] on [date] — required before Phase 2/3 proceed.
 
 ## Anti-Patterns This Skill Prevents
 
-- **Building an extractor before checking if the app is even big enough to need one.** Wasted setup cost for a migration `assess-migration.md` could have covered by hand in less time.
+- **Skipping the extractor because the app looks small enough to read by hand.** An extraction pipeline is stood up for every migration, regardless of size — `assess-migration.md`'s manual read complements the extraction output, it never substitutes for it.
 - **Running Phase 3 (BRD scaffolding) the moment Phase 2 produces output, with no scope sign-off.** Produces BRDs for capabilities nobody agreed should come first.
 - **Calling every bounded-scope decision a "POC."** Forces artificial throwaway framing onto phased full migrations, and invites treating the first slice's shortcuts as permanent.
 - **Deciding module boundaries (`modularize-domain.md`) before asking whether this should be multiple apps.** The app-count question is upstream of the module-count question — answering them in the wrong order means redrawing module boundaries after discovering they should've been app boundaries.
