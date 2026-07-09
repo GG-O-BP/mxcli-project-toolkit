@@ -10,6 +10,7 @@ Load skill files **on demand when the task calls for it** — not all upfront.
 
 | Task | Read this file |
 |------|---------------|
+| Running a conversion project end-to-end — the ordered, source-agnostic prompt checklist (intake → triage → BRD → architecture → build → test) | `skills/conversion-runbook.md` |
 | Choosing the extraction pipeline (reuse vs build new — an extractor is always stood up, regardless of app size), checking extractor/mapper coverage, scoping a large source | `skills/source-triage.md` |
 | Running or explaining the pipeline | `skills/migration-pipeline.md` |
 | Deciding Mendix module boundaries (Phase 6, before `create module`) | `skills/modularize-domain.md` |

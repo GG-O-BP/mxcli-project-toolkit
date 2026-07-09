@@ -1,0 +1,376 @@
+# Conversion Runbook — 소스 무관 Mendix 컨버전 체크리스트
+**Purpose:** 어떤 소스 스택이든 이 문서의 프롬프트를 순서대로 에이전트에 입력하면, 동일한 게이트를 거쳐 mxcli 기반 Mendix 앱으로 컨버전이 완료되게 하는 실행 런북. 특정 프로젝트 전용 체크리스트를 만들지 않기 위한 범용 템플릿.
+**Source:** 2026-07 컨버전 런북 재설계 세션 — 프로젝트 전용 체크리스트를 폐기하고 범용판으로 재작성.
+
+---
+
+## 런북 규칙 (모든 단계에 적용)
+
+1. **스택 무언급** — 이 문서에는 특정 소스 기술명이 없다. 스택 판정과 그에 따른 분기는 0단계 산출물이 담당한다. 이 문서에 스택명을 적고 싶어진다면 그것은 인테이크/트리아지 산출물(`intake.md`/`triage.md`)에 들어갈 내용이다.
+2. **프롬프트는 통째로 복사** — 각 프롬프트 블록의 첫 줄 `먼저 읽기:`가 그 단계의 스킬 경로다. 이 줄을 포함해 블록 전체를 복사해 에이전트에 입력한다. 절차 지식은 스킬 파일에 있고 이 런북은 순서·산출물·게이트만 정의한다 — 스킬이 개선되면 런북은 자동으로 따라간다.
+3. **게이트는 파일과 조건으로 판정** — "완료된 것 같음"이 아니라 "존재해야 하는 파일 + 그 안에 있어야 하는 내용"으로 판정한다. ✋ 표시는 **사용자 승인 없이는 다음 단계 진행 금지**인 하드 게이트다.
+4. **0~4단계에서는 mxcli를 실행하지 않는다** — MDL/모델 조작은 5단계에서 시작한다. 잘못된 모듈 경계는 다이어그램 단계에서 고치는 것이 스크립트 40개가 그것을 전제한 뒤 고치는 것보다 훨씬 싸다.
+5. **즉흥 판단 = 런북 결함** — 진행 중 이 문서에 없는 판단이 필요했다면, 그 프로젝트에서 우회하고 끝내지 말고 툴킷의 이 템플릿을 고친다(마무리 단계 참조).
+6. **분기는 명시된 곳에서만** — B1(파이프라인 신규 구축), B2(문서 자료 유무), B3(멀티앱 질문) 세 분기 외의 단계 생략은 허용되지 않는다. 특히 "앱이 작으니 생략"은 금지 — 추출 파이프라인은 앱 크기와 무관하게 항상 세운다.
+
+### 단계 지도
+
+| 순서 | 단계 | 하드 게이트 ✋ |
+|---|---|---|
+| P | 착수 준비 (워크스페이스·CLAUDE.md·에이전트·인테이크) | — |
+| 0 | TRIAGE (인벤토리 → 파이프라인 결정 → 범위) | ✋ 범위·파이프라인 서명 |
+| 1 | ANALYSIS (A: 코드 추출 ∥ B: 문서 KB) | — |
+| 2 | REQUIREMENTS (BRD 스캐폴드 → 보강 → 검증) | — |
+| 3 | ARCHITECTURE & DESIGN (모듈 경계 → 청사진 ∥ 디자인) | ✋ (멀티앱 해소,) 모듈 경계 승인 |
+| 4 | BUILD PLAN | ✋ 계획 승인 |
+| 5 | BUILD (mxcli 시작) | 모듈별 빌드 루프 게이트 |
+| 6 | TEST | 골든 패스·엣지·DB 어설션 |
+| — | 마무리 (학습 환류) | — |
+
+## 변수 — 인스턴스화할 때 전부 치환
+
+| 변수 | 의미 |
+|---|---|
+| `<TOOLKIT>` | 이 툴킷 클론의 절대 경로 (예: `~/Mendix/mxcli-project-toolkit`) |
+| `<PROJECT>` | 소스 저장소/폴더 이름 |
+| `<WORKSPACE>` | 프로젝트 전용 워크스페이스 루트 — 툴킷 저장소와 분리 |
+| `<SOURCE_DIR>` | `<WORKSPACE>/sources/<PROJECT>` — 원본 소스, 수정 금지 |
+| `<ANALYSIS_DIR>` | `<WORKSPACE>/analysis/<PROJECT>` — 이 프로젝트의 모든 산출물 |
+| `<TARGET_MPR>` | 대상 Mendix 프로젝트 `.mpr` 경로 — 5단계 전까지 확보 |
+
+**사용법:** 이 파일을 `<WORKSPACE>/CONVERSION-RUNBOOK.md`로 복사하고 변수를 치환한다. 체크 표시(진행 기록)는 그 사본에만 남긴다 — 툴킷 저장소에는 어떤 프로젝트의 진행 기록도 커밋하지 않는다.
+
+---
+
+## P단계 — 착수 준비
+
+### P-1. 워크스페이스
+
+- [ ] `<SOURCE_DIR>`에 원본 소스 확보 — 읽기 전용으로 취급, 원본을 절대 수정하지 않는다
+- [ ] `<ANALYSIS_DIR>` 생성
+- [ ] `<WORKSPACE>`는 자체 git 저장소다 — 툴킷 저장소가 아니다. (소스를 툴킷 폴더 밑에 두는 변칙 구성이라면 `sources/`·`analysis/`·`knowledge-base/`·`*.mpr`가 툴킷 `.gitignore`에 있는지 확인)
+
+### P-2. 프로젝트 CLAUDE.md + 서브에이전트
+
+- [ ] 프롬프트 실행
+
+  ```
+  먼저 읽기: <TOOLKIT>/skills/bootstrap-project.md
+
+  위 스킬에 따라 <WORKSPACE>의 CLAUDE.md를 생성해줘. 툴킷 경로는 <TOOLKIT>이고,
+  Baseline routing 표를 반드시 포함해야 해. 프로젝트 고유 사실 섹션은
+  <ANALYSIS_DIR>/intake.md가 아직 없으므로 자리표시자로 두고, P-4 완료 후
+  갱신해야 한다고 명시해줘.
+  ```
+
+- [ ] 프롬프트 실행
+
+  ```
+  먼저 읽기: <TOOLKIT>/skills/agent-roles.md
+
+  위 스킬에 따라 이 프로젝트의 .claude/agents/ 밑에 mdl(draft)/gate/test
+  서브에이전트 정의를 생성해줘. 방금 만든 <WORKSPACE>/CLAUDE.md를 먼저 읽고 시작해줘.
+  ```
+
+- [ ] 산출물 확인: `<WORKSPACE>/CLAUDE.md`(Baseline routing 포함), `.claude/agents/*.md` 3종
+
+### P-3. 도구
+
+- [ ] Node.js 사용 가능 (추출 파이프라인 실행용). `npm install`은 0단계에서 파이프라인이 결정된 뒤 해당 `pipeline/` 디렉터리에서 실행
+- [ ] Mendix Studio Pro + mxcli 설치·버전 확인 — **5단계 전까지만 준비되면 됨.** 지금 없어도 P~4단계는 전부 진행 가능
+- [ ] `<TARGET_MPR>` — 마찬가지로 5단계 전까지 준비
+
+### P-4. 인테이크 — 표준 8문항
+
+- [ ] 프롬프트 실행
+
+  ```
+  <SOURCE_DIR>를 탐색해서 아래 8개 질문에 답하는 <ANALYSIS_DIR>/intake.md를 작성해줘.
+  코드로 확인되지 않는 항목은 추측으로 채우지 말고 "미확인 — 확인 경로: ..."로 남겨줘.
+
+  1. 소스가 완전한 앱인가 발췌본인가? 그대로 컴파일/실행 가능한가?
+  2. 컨버전 범위 후보는? (전체 / 특정 기능·화면 부분집합 — 확정은 0단계 게이트에서)
+  3. 데이터 모델의 출처는? (DDL / ORM 정의 / SQL·샘플 데이터에서 유추 / 별도 확보 필요)
+  4. 시드·테스트용 샘플 데이터가 있는가? 어떤 파일인가?
+  5. 추출에서 제외할 벤더/프레임워크/자동생성 코드 디렉터리는? (경로 목록)
+  6. 인증·권한 모델 정보가 소스 안에 있는가? (세션/역할/접근제어)
+  7. 비즈니스 문서(설계서·사양서·매뉴얼·스프레드시트)가 있는가? 어디에?
+  8. 미해결 질문을 답해줄 소스 시스템 담당자(SME)가 있는가?
+  ```
+
+- [ ] **게이트:** `intake.md`에 8문항 전부가 "답" 또는 "미확인 — 확인 경로"로 기재됨. 빈 항목 금지.
+- [ ] intake 결과로 `<WORKSPACE>/CLAUDE.md`의 프로젝트 고유 사실 섹션 갱신
+
+---
+
+## 0단계 — TRIAGE ✋
+
+### 0-A. 수동 인벤토리
+
+- [ ] 프롬프트 실행
+
+  ```
+  먼저 읽기: <TOOLKIT>/skills/assess-migration.md
+
+  위 스킬의 6개 조사 단계와 보고서 템플릿에 따라 <SOURCE_DIR>를 분석해서
+  <ANALYSIS_DIR>/assessment.md를 작성해줘. <ANALYSIS_DIR>/intake.md 5번의
+  제외 목록은 건너뛰고, 데이터 모델·비즈니스 로직·화면·연동·보안·리스크를
+  Mendix 매핑 열과 함께 정리해줘.
+  ```
+
+- [ ] 산출물 확인: `assessment.md`에 인벤토리 요약표 + 6개 섹션 + 리스크 표
+
+### 0-B. 파이프라인 결정 + 범위 확정
+
+- [ ] 프롬프트 실행
+
+  ```
+  먼저 읽기: <TOOLKIT>/skills/source-triage.md, <TOOLKIT>/skills/migration-pipeline.md
+
+  <ANALYSIS_DIR>/intake.md와 assessment.md를 입력으로 source-triage의 5개 스텝을
+  수행해서 <ANALYSIS_DIR>/triage.md를 작성해줘. 반드시 포함:
+  ① 추출 파이프라인 결정 — <TOOLKIT>/pipelines/ 의 기존 파이프라인 재사용(어느 것)
+     vs 신규 구축. extractor는 앱 크기와 무관하게 항상 세운다.
+  ② 업무 능력 지도 + 커버리지 매트릭스 (Ready/Extract-only/Build/Defer/Unknown)
+  ③ 한정 범위 권고 (intake 2번의 범위 후보 반영)
+  ④ 멀티 Mendix 앱 질문 플래그 (해당 시 — 플래그만, 결정은 하지 말 것)
+  assessment.md의 인벤토리와 추출 예상치가 어긋나는 지점이 있으면 간극으로 명시해줘.
+  ```
+
+- [ ] **게이트 ✋:** `triage.md`에 ①~④ 섹션 존재 + **사용자가 확정 범위와 파이프라인 결정에 서명.** 이 승인 전에는 2단계(BRD) 산출물을 만들지 않는다.
+
+### 0-C. (분기 B1) 신규 파이프라인 구축 — 0-B 판정이 "신규 구축"일 때만, "재사용"이면 건너뜀
+
+- [ ] 프롬프트 실행
+
+  ```
+  먼저 읽기: <TOOLKIT>/skills/migration-pipeline.md 의 "Creating a New Stack Pipeline"
+  섹션, <TOOLKIT>/skills/qa-loop-goal-pattern.md
+
+  triage.md의 결정에 따라 이 소스 스택용 추출 파이프라인을 구축해줘.
+  triage가 지정한 가장 가까운 기존 파이프라인(<TOOLKIT>/pipelines/ 중 하나)에서
+  범용 파일(interfaces/merger/linker 엔진/brd-mappers/run.js/report 생성기)을
+  복사하고, 소스 형태별 extractor와 이 스택의 linker 규칙만 새로 작성해줘.
+  logicKind 어휘는 기존 5개 값을 재사용하고, config.json의 knowledgeBaseDir는
+  <ANALYSIS_DIR>/knowledge-base 를 가리키게 해줘. 스택 레퍼런스 스킬
+  source-{stack}.md 도 <TOOLKIT>/skills/에 작성해줘.
+  완료 후 qa-loop-goal-pattern의 /goal 템플릿으로, 수작업 ground truth와 대조해
+  추출 품질이 실제로 검증될 때까지 반복해줘.
+  ```
+
+- [ ] **게이트:** `migration-pipeline.md`의 신규 파이프라인 부트스트랩 체크리스트 전 항목 통과 + qa-loop 검증이 ground truth 대비 완료된 상태("에러 없이 돎"이 아니라). 파이프라인 구축 소요 시간은 마이그레이션 일정과 분리해 보고한다.
+
+---
+
+## 1단계 — ANALYSIS (경로 A/B는 순서 무관, 병렬 가능)
+
+### 1-A. 코드 추출 (Path A)
+
+- [ ] `pipeline/config.json` 확인: `knowledgeBaseDir` = `<ANALYSIS_DIR>/knowledge-base`, 소스 경로 = `<SOURCE_DIR>` (실제 로컬 경로는 파이프라인 저장소에 커밋 금지)
+- [ ] 프롬프트 실행
+
+  ```
+  먼저 읽기: <TOOLKIT>/skills/migration-pipeline.md (Phase 2)
+
+  triage.md가 지정한 파이프라인으로 <SOURCE_DIR>의 확정 범위를 추출해줘
+  (node run.js 2). 완료 후 <ANALYSIS_DIR>/knowledge-base/reports/ 의
+  gaps-report.md와 coverage-report.md를 검토하고, Phase 2 품질 체크 4항목
+  (엔티티 수가 소스 인벤토리와 일치 / 크로스레퍼런스 갭 15% 미만 /
+  업무 모듈 전부 존재 / 무음 실패 없음)을 각각 근거와 함께 판정해줘.
+  intake 5번의 제외 목록이 실제로 추출에서 빠졌는지도 확인해줘.
+  ```
+
+- [ ] **게이트:** 품질 체크 4항목 전부 통과. 미달 항목은 extractor 수정(0-C의 qa-loop로 회귀) 후 재실행 — 미달인 채로 2단계 진행 금지.
+
+### 1-B. (분기 B2) 문서·데이터 KB (Path B) — intake 7번(문서)·4번(데이터)에 자료가 있을 때만. 없으면 `triage.md`에 "Path B 생략: 근거" 한 줄을 기록하고 건너뜀
+
+- [ ] 프롬프트 실행
+
+  ```
+  먼저 읽기: <TOOLKIT>/skills/document-discovery.md
+
+  intake.md 7번(과 4번)의 문서·데이터 자료를 재귀 스캔·분류해서
+  <ANALYSIS_DIR>/knowledge-base/share/discovery-manifest.json 을 만들어줘.
+  소스 코드·DB 산출물은 문서 파이프라인 밖으로 라우팅하고, 미지원/미분류 파일은
+  Review_Later.md에 남겨줘 — 아무것도 조용히 버리지 말 것. 추출 대상 목록을
+  정리한 뒤 내 승인을 받고 멈춰줘.
+  ```
+
+- [ ] 승인 후 프롬프트 실행
+
+  ```
+  먼저 읽기: <TOOLKIT>/skills/kb-generation.md
+
+  승인된 파일들을 위 스킬의 템플릿으로 추출해서
+  <ANALYSIS_DIR>/knowledge-base/share/ 밑에 KB_*.md 를 만들고 KB.md 로 병합해줘.
+  필드 정의, 대표 샘플, 화면 구성요소를 포함해줘.
+  ```
+
+- [ ] **게이트:** `share/`에 `discovery-manifest.json` + `KB.md` 존재, 처리 안 된 파일은 전부 `Review_Later.md`에 사유와 함께 기재
+
+---
+
+## 2단계 — REQUIREMENTS (BRD)
+
+### 2-A. 스캐폴드
+
+- [ ] 프롬프트 실행
+
+  ```
+  먼저 읽기: <TOOLKIT>/skills/migration-pipeline.md (Phase 3)
+
+  triage.md에서 승인된 범위에 대해 BRD 스캐폴드를 생성해줘 (node run.js 3,
+  이어서 리포트 생성). 기존 BRD 파일에 enrichment 흔적(reviewStatus: 'reviewed'
+  useCase 또는 비어 있지 않은 openQuestions)이 있으면 덮어쓰지 말고
+  .brd.scaffold.json 으로 비켜 써야 해. extraction-report.html 이 브라우저에서
+  렌더되는지 확인해줘.
+  ```
+
+### 2-B. 보강
+
+- [ ] 프롬프트 실행
+
+  ```
+  먼저 읽기: <TOOLKIT>/skills/brd-generation.md
+
+  스캐폴드 BRD에 (있다면) share/KB.md 를 병합해서
+  <ANALYSIS_DIR>/knowledge-base/brd/ 밑에 F{NNN}.brd.json 을 완성해줘.
+  작성 순서는 의존성 순: 마스터데이터/열거형 → 공통 컴포넌트 → 업무 기능 → 연동.
+  소스 전용 구문이나 Mendix에 대응물이 없는 기능은 businessRules 또는
+  openQuestions로 명시하고, KB 커버리지가 없는 모듈은 openQuestions에
+  업무 확인 필요 항목만 채워줘 — 서사를 지어내지 말 것.
+  ```
+
+### 2-C. 검증
+
+- [ ] 프롬프트 실행
+
+  ```
+  먼저 읽기: <TOOLKIT>/skills/brd-validation.md
+
+  방금 만든 BRD 전체를 위 스킬의 체크로 검증해줘 — 중복, 코드·문서 간 충돌,
+  고아 개념, 깨진 관계. validation-report.md 를 만들고, 문제를 고치고,
+  clean이 될 때까지 반복해줘. KB가 없는 모듈의 공백은 충돌로 취급하지 말 것.
+  ```
+
+- [ ] **게이트:** `brd/*.brd.json` 전부 validation-clean, `validation-report.md` 최종본 issue 0건
+
+---
+
+## 3단계 — ARCHITECTURE & DESIGN
+
+### 3-0. (분기 B3) 멀티앱 질문 해소 ✋ — `triage.md` ④에 플래그가 있을 때만
+
+- [ ] "하나의 Mendix 앱인가, 여러 개인가"를 사용자와 결정하고 결론을 `triage.md`에 추가. **이 결정 전에 3-a를 진행하지 않는다** — 앱 개수 질문은 모듈 개수 질문보다 상류다.
+
+### 3-a. 모듈 경계 ✋ (선행)
+
+- [ ] 프롬프트 실행
+
+  ```
+  먼저 읽기: <TOOLKIT>/skills/modularize-domain.md
+
+  검증된 BRD를 입력으로, 이 앱의 Mendix 모듈 개수와 경계를 위 스킬의 기준으로
+  결정해줘. 소스의 폴더/모듈 구조를 1:1로 베끼지 말 것. 근거 HTML 문서를 만들어
+  내 승인을 받고, 승인된 경계를 F{NNN}.mx-brd.json 으로 확정해줘
+  (migration-pipeline.md Phase 6 규칙).
+  ```
+
+- [ ] **게이트 ✋:** 근거 HTML + 사용자 승인 + `brd/*.mx-brd.json` 존재
+
+### 3-b. 아키텍처 청사진 (3-a 후, 3-c와 병렬 가능)
+
+- [ ] 프롬프트 실행
+
+  ```
+  먼저 읽기: <TOOLKIT>/skills/architecture-blueprint.md
+
+  .mx-brd.json 을 입력으로 모듈 정의 문서, 아키텍처/의존성(wiring) 다이어그램,
+  fit-gap 분석, 미해결 이슈 등록부를 <ANALYSIS_DIR>/architecture/ 에 작성해줘.
+  Mendix가 제공하지 않는 소스 의존 기능은 전부 fit-gap 항목으로 올려줘.
+  ```
+
+### 3-c. 디자인 산출물 (3-a 후, 3-b와 병렬 가능)
+
+- [ ] 프롬프트 실행
+
+  ```
+  먼저 읽기: <TOOLKIT>/skills/design-artifacts.md
+
+  <SOURCE_DIR>의 화면 자료와 BRD의 pages/useCases 를 바탕으로 버전 관리되는
+  디자인 시스템과 화면별 와이어프레임을 <ANALYSIS_DIR>/design/ 에 작성해줘.
+  5단계 빌드의 스크린샷 검증이 이 와이어프레임과 대조된다는 전제로 만들어줘.
+  ```
+
+- [ ] **게이트:** 모듈 정의 + 다이어그램 + fit-gap(미해결 이슈 등록부 포함) + 디자인 시스템 + 범위 내 전 화면 와이어프레임
+
+---
+
+## 4단계 — BUILD PLAN ✋
+
+- [ ] 프롬프트 실행
+
+  ```
+  먼저 읽기: <TOOLKIT>/skills/brd-to-build-plan.md
+
+  .mx-brd.json + 3단계 산출물(의존성 그래프, fit-gap, 미해결 이슈 등록부)로
+  번호 매겨진 의존성 순서 빌드 계획을 <WORKSPACE>/architecture/build-plan.md 에
+  작성해줘 (엔티티 → 연관관계 → 마이크로플로우 → 페이지). 미해결 이슈 중
+  스크립트 01 실행 전에 답이 필요한 것들을 계획 서두의 결정 대기 목록으로 올려줘.
+  ```
+
+- [ ] **게이트 ✋:** 계획이 `<WORKSPACE>`에 존재(툴킷 저장소 금지), 결정 대기 목록이 비었거나 전부 답변됨, 사용자 승인 완료
+
+---
+
+## 5단계 — BUILD (여기서부터 mxcli)
+
+- [ ] 전제 확인: `<TARGET_MPR>` 존재 + Studio Pro에서 열림, `mxcli --version` 동작, 프로젝트 CLAUDE.md의 Baseline routing이 툴킷 최신과 일치
+- [ ] 프롬프트 실행 (빌드 계획의 스크립트/모듈 단위로 반복)
+
+  ```
+  먼저 읽기: <TOOLKIT>/skills/iterative-build-loop.md,
+  <TOOLKIT>/skills/learned-mdl-preflight.md,
+  <TOOLKIT>/skills/learned-microflow-patterns.md,
+  <TOOLKIT>/skills/learned-mcp-patterns.md,
+  <TOOLKIT>/skills/mdl-cookbook-microflows.md
+
+  <WORKSPACE>/architecture/build-plan.md 의 다음 스크립트를 iterative-build-loop의
+  게이트 순서대로 mxcli로 <TARGET_MPR>에 실행하고 검증해줘. MDL 초안을 쓰기 전에
+  learned-mdl-preflight 의 STOP 조건에 계획된 작업 전부를 대조하고, CE 오류가 나면
+  <TOOLKIT>/bug-logs/mxcli-bugs.md 와 먼저 대조해서 알려진 이슈인지 확인해줘.
+  ```
+
+- [ ] 상시 규율 (프로젝트 CLAUDE.md에도 명시되어 있어야 함):
+  - CE 오류 → `bug-logs/mxcli-bugs.md` 대조가 먼저. 새 버그는 재현 절차와 함께 기록
+  - 스크린샷·시각 리뷰·UI 테스트 전 **stale-build 프로토콜**: `mxcli exec` 후 Studio Pro 완전 재시작 → Run Locally → HTTP 200 확인 → 그 다음에만 스크린샷 (툴킷 README 최상단 규칙)
+  - 페이지 검증은 3-c 와이어프레임과 대조
+- [ ] **게이트:** 빌드 계획의 전 스크립트가 iterative-build-loop의 모듈별 게이트를 통과 (CE-error-free ≠ 기능적으로 정확 — 게이트의 검증 항목 기준)
+
+---
+
+## 6단계 — TEST
+
+- [ ] 프롬프트 실행
+
+  ```
+  먼저 읽기: <TOOLKIT>/skills/e2e-harness-base.md,
+  <TOOLKIT>/skills/learned-db-assertions.md
+
+  빌드된 앱에 Playwright E2E 하니스를 세우고, 골든 패스(조회/등록/수정/삭제)
+  테스트를 작성해줘. 시드 데이터는 intake.md 4번의 샘플 데이터를 사용해줘.
+  DB 검증은 learned-db-assertions 대로 진행하고, 이어서 엣지 케이스
+  (빈 값, 중복 키, 페이징 경계, 권한 없는 접근)를 추가해줘.
+  실행 결과는 성공/실패 원문 그대로 보고해줘.
+  ```
+
+- [ ] **게이트:** 골든 패스 + 엣지 케이스 + DB 어설션 전부 통과. 실패는 수정 후 재실행하며, 통과 전에는 완료 선언 금지.
+
+---
+
+## 마무리 — 환류 (컨버전 완료 후)
+
+- [ ] 이 프로젝트에서 검증된 범용 패턴 → `<TOOLKIT>/skills/learned-*.md` 로 승격 (프로젝트 계획·세션 노트 전체를 툴킷으로 옮기지 말 것)
+- [ ] 진행 중 기록한 **런북 결함**(이 문서에 없어서 즉흥 판단이 필요했던 지점) → 이 템플릿(`<TOOLKIT>/skills/conversion-runbook.md`)을 수정하고 커밋
+- [ ] 새로 만난 mxcli 버그 → `<TOOLKIT>/bug-logs/mxcli-bugs.md`에 추가
+- [ ] 신규 스택 파이프라인을 구축했다면: 파이프라인 README와 `source-{stack}.md`가 다음 프로젝트가 그대로 재사용할 수 있는 상태인지 확인
