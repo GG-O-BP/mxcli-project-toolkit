@@ -146,6 +146,7 @@ mxcli-project-toolkit/
 | 페이지 빌드 전에 브랜드 + 와이어프레임 설계 | `design-artifacts.md` |
 | BRD + 아키텍처를 순서가 정해진 빌드 계획으로 변환 | `brd-to-build-plan.md` |
 | mxcli로 모듈 빌드 (검증 기반 반복 방식) | `iterative-build-loop.md` |
+| 빌드 완료 후 Playwright E2E 스위트 구축 (골든 패스, 엣지 케이스, DB 어설션) | `e2e-harness-base.md` + `learned-db-assertions.md` |
 | BRD JSON 작성 또는 보강 | `brd-generation.md` |
 | Excel/Word/PDF 사양서 추출 | `kb-generation.md` |
 | OS XML 소스 이해 | `source-os11.md` + `os-xml-schema.md` |

@@ -23,12 +23,13 @@ Load skill files **on demand when the task calls for it** — not all upfront.
 | Generic (source-agnostic) migration guidance | `skills/migrate-general.md` |
 | Migrating an OutSystems app | `skills/migrate-outsystems.md` |
 | Diagnosing a mxcli CLI error | `bug-logs/mxcli-bugs.md` |
+| Building the Playwright E2E suite after a build phase (golden path, edge cases, DB assertions) | `skills/e2e-harness-base.md` + `skills/learned-db-assertions.md` |
 | Understanding past process decisions | `process/process-learnings.md` |
 | Generating a new project's CLAUDE.md (Baseline routing + project-specific facts) | `skills/bootstrap-project.md` |
 | Setting up dev-process subagents (draft/gate/test) on a new project | `skills/agent-roles.md` |
 
 ## Conversion runbook (user-facing, not a skill)
-`CONVERSION-RUNBOOK.md` (repo root) is the **user-facing** checklist of example prompts a human types into the agent, stage by stage (P → 0–6), to run any conversion end-to-end. It is not a skill — do not load it as task guidance. When the user says they are "following the runbook" or pastes a prompt starting with `먼저 읽기:`, read the skill files that prompt names and execute that stage; treat the runbook's gates (✋ = user sign-off required) as binding.
+`CONVERSION-RUNBOOK.md` (repo root) is the **user-facing** checklist of example prompts a human types into the agent, stage by stage (P → 0–6), to run any conversion end-to-end. It is not a skill — do not load it as task guidance. Runbook prompts intentionally contain **no skill paths**: when the user pastes a runbook stage prompt (a task with named outputs and gates), select and read the right skills yourself via the routing tables (the table above + Baseline routing), then execute the stage. Treat the runbook's gates (✋ = user sign-off required) as binding.
 
 ## Pipelines (extraction tooling — code lives in this repo)
 The source-specific extraction pipelines now live **in this repo** under `pipelines/`:
