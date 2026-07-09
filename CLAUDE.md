@@ -10,7 +10,6 @@ Load skill files **on demand when the task calls for it** — not all upfront.
 
 | Task | Read this file |
 |------|---------------|
-| Running a conversion project end-to-end — the ordered, source-agnostic prompt checklist (intake → triage → BRD → architecture → build → test) | `skills/conversion-runbook.md` |
 | Choosing the extraction pipeline (reuse vs build new — an extractor is always stood up, regardless of app size), checking extractor/mapper coverage, scoping a large source | `skills/source-triage.md` |
 | Running or explaining the pipeline | `skills/migration-pipeline.md` |
 | Deciding Mendix module boundaries (Phase 6, before `create module`) | `skills/modularize-domain.md` |
@@ -27,6 +26,9 @@ Load skill files **on demand when the task calls for it** — not all upfront.
 | Understanding past process decisions | `process/process-learnings.md` |
 | Generating a new project's CLAUDE.md (Baseline routing + project-specific facts) | `skills/bootstrap-project.md` |
 | Setting up dev-process subagents (draft/gate/test) on a new project | `skills/agent-roles.md` |
+
+## Conversion runbook (user-facing, not a skill)
+`CONVERSION-RUNBOOK.md` (repo root) is the **user-facing** checklist of example prompts a human types into the agent, stage by stage (P → 0–6), to run any conversion end-to-end. It is not a skill — do not load it as task guidance. When the user says they are "following the runbook" or pastes a prompt starting with `먼저 읽기:`, read the skill files that prompt names and execute that stage; treat the runbook's gates (✋ = user sign-off required) as binding.
 
 ## Pipelines (extraction tooling — code lives in this repo)
 The source-specific extraction pipelines now live **in this repo** under `pipelines/`:
