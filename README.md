@@ -149,6 +149,8 @@ mxcli-project-toolkit/
 | Excel/Word/PDF 사양서 추출 | `kb-generation.md` |
 | OS XML 소스 이해 | `source-os11.md` + `os-xml-schema.md` |
 | MDL 마이크로플로우 스크립트 작성 | `mdl-cookbook-microflows.md` |
+| 초안 작성 전에 MDL vs MCP vs SP GUI 중 어디에 쓰는 게 안전한지 확인 (STOP 표) | `skills/learned-mdl-preflight.md` |
+| mxcli와 MCP 병행 사용 — 핸드오프 순서, 저장 규율, 검증된 JSON 패턴, 알려진 버그 | `skills/learned-mcp-patterns.md` |
 | mxcli 오류 진단 | `bug-logs/mxcli-bugs.md` |
 | 새 스택 파이프라인의 추출 품질 검증 | `qa-loop-goal-pattern.md` |
 | `create module` 전에 모듈 경계 결정 | `modularize-domain.md` |
@@ -199,7 +201,9 @@ git clone https://github.com/MendixMau/mxcli-project-toolkit.git ~/Mendix/mxcli-
 
 | 항상 해당되는 상황 | 참조할 파일 |
 |---|---|
-| 마이크로플로우 작성 또는 수정 전반 | `skills/learned-microflow-patterns.md` — MDL 함정 + 주석(annotation) 규율 (전면 적용이 아니라 선별 적용; CE 오류 수정에는 항상 주석) |
+| **모든** MDL 스크립트 작성 — 첫 줄을 쓰기 전에 | `skills/learned-mdl-preflight.md` — 11가지 STOP 조건 (각각 실제 손상(corruption) 사고에 근거); 초안 작성 전에 계획한 모든 작업을 여기서 점검 |
+| 마이크로플로우 작성 또는 수정 전반 | `skills/learned-microflow-patterns.md` — MDL 함정 + 주석(annotation) 규율 (배치 규칙 — `if` 앞에는 절대 금지; CE 오류 수정에는 항상 주석) |
+| mxcli와 MCP 병행 사용 — 모든 MCP 쓰기 세션 | `skills/learned-mcp-patterns.md` — 저장 규율, 미커밋 MPR 가드, 실행 전 핸드오프 순서, 검증된 JSON 패턴 |
 | 모델링 실수가 아니라 알려진 mxcli 특이 동작으로 보이는 CE 오류나 동작 | `bug-logs/mxcli-bugs.md` |
 | 새 프로젝트의 개발 프로세스 서브에이전트 구성 | `skills/agent-roles.md` — 프로젝트 시작 시 한 번, "필요할 때"가 아님 |
 | BRD가 생성되기 전, 추출 파이프라인 선택(재사용 vs 신규 구축) | `skills/source-triage.md` |
