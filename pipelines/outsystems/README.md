@@ -12,15 +12,16 @@ Takes OS eSpace XML files → structured JSON knowledge base → BRD scaffolds p
 
 ```bash
 cd pipeline
+bun install   # one-time — the toolkit's JS toolchain is bun-only
 
 # 1. Extract all OS XML files into a JSON knowledge base
-node run.js 2 xml
+bun run.js 2 xml
 
 # 2. Generate BRD scaffolds (one .brd.json per module)
-node run.js 3
+bun run.js 3
 
 # 3. Build the HTML report and open it
-node generate-report.js
+bun generate-report.js
 # → knowledge-base/extraction-report.html
 ```
 
@@ -49,7 +50,7 @@ Set your source paths in `pipeline/config.json` before running.
 OS-migration-skills/
   pipeline/
     config.json             ← source paths
-    run.js                  ← phase orchestrator (node run.js <1|2|3>)
+    run.js                  ← phase orchestrator (bun run.js <1|2|3>)
     generate-report.js      ← HTML report generator
     extractors/
       xml-extractor.js      ← ACTIVE: parses OS eSpace XML → extracted/

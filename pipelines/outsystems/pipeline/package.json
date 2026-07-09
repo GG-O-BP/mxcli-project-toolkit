@@ -3,8 +3,13 @@
   "version": "1.0.0",
   "type": "commonjs",
   "scripts": {
-    "test": "node --test tests/**/*.test.js tests/**/**/*.test.js"
+    "test": "bun test tests"
   },
+  "trustedDependencies": [
+    "tree-sitter",
+    "tree-sitter-c-sharp",
+    "tree-sitter-javascript"
+  ],
   "dependencies": {
     "fast-xml-parser": "^4.3.6",
     "glob": "^10.3.12",

@@ -15,19 +15,20 @@ Sibling to `os-migration-pipeline` (OutSystems 11 → Mendix) — see
 
 ```bash
 cd pipeline
+bun install   # one-time — the toolkit's JS toolchain is bun-only
 
 # 1. Extract Java + Angular source, merge (writes to config.json's knowledgeBaseDir, NOT here — see
 #    "Project Workspace Convention" in migration-pipeline.md)
-node run.js 2
+bun run.js 2
 
 # 2. Generate BRD scaffolds (one .brd.json per module)
-node run.js 3
+bun run.js 3
 
 # 3. Phase 4 — enrich the BRDs (human/conversational step, not mechanical — see
 #    migration-pipeline.md's "extractors capture structure, mappers/review supply narrative")
 
 # 4. Generate both reports
-npm run reports
+bun run reports
 # → <knowledgeBaseDir>/extraction-report.html      (raw extraction + gaps, interactive drilldown)
 # → <knowledgeBaseDir>/enrichment-summary.html      (business-facing: app overview, modules,
 #                                              entities, functions, use cases, open questions)
@@ -47,7 +48,7 @@ a reusable, downloadable pipeline rather than one-off-per-project code).
 java-angular-migration-skills/
   pipeline/
     config.json                  ← source paths
-    run.js                       ← phase orchestrator (node run.js <1|2|3|all> [java|angular])
+    run.js                       ← phase orchestrator (bun run.js <1|2|3|all> [java|angular])
     generate-report.js           ← raw extraction/gap HTML dashboard
     generate-enrichment-report.js ← business-facing enrichment summary HTML
     extractors/

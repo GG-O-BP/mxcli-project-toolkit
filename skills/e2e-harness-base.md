@@ -19,9 +19,9 @@ Build after completing a module build phase:
 
 ## Prerequisites
 
-- Node.js available
-- Playwright installed: `npm init -y && npm i -D playwright`
-- `npx playwright install chromium`
+- Bun available (`bun --version` — the toolkit's JS toolchain is bun-only; node/npm are not assumed)
+- Playwright installed: `bun init -y && bun add -d playwright`
+- `bunx playwright install chromium`
 - App running at `http://localhost:8080`
 - PostgreSQL accessible via psql.exe (for DB assertions)
 - Test user credentials known (e.g. `yoko.taoka / Apex12345`)

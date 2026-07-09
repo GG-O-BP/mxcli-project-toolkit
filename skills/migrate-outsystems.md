@@ -16,7 +16,7 @@ OS-migration-skills/
 │   └── assess-migration.md        ← generic assessment template (entities, logic, pages, security)
 ├── pipeline/
 │   ├── run.js                     ← orchestrator: phase 1 (sample), phase 2 (extract), phase 3 (generate)
-│   ├── package.json               ← npm dependencies (fast-xml-parser, tree-sitter, glob)
+│   ├── package.json               ← dependencies (fast-xml-parser, tree-sitter, glob) — install with bun install
 │   ├── extractors/
 │   │   ├── xml-extractor.js       ← parses OutSystems eSpace XML → structured JSON
 │   │   ├── cs-extractor.js        ← parses C# generated code (tree-sitter)
@@ -58,7 +58,7 @@ OS-migration-skills/
 Samples a few XMLs to produce `samples/schema.json` — a structural fingerprint of the XML format. Use this first to orient yourself before full extraction.
 
 ```bash
-node run.js 1 xml
+bun run.js 1 xml
 ```
 
 Output: `pipeline/samples/xml-schema.json`
@@ -68,7 +68,7 @@ Output: `pipeline/samples/xml-schema.json`
 Runs the full `xml-extractor.js` against all XML files, then the merger builds the knowledge base.
 
 ```bash
-node run.js 2 xml
+bun run.js 2 xml
 ```
 
 Output written to `knowledge-base/`:
@@ -87,7 +87,7 @@ Output written to `knowledge-base/`:
 Runs the BRD mappers over the knowledge base and produces one structured BRD JSON per module, plus a self-contained HTML report for human review.
 
 ```bash
-node run.js 3
+bun run.js 3
 ```
 
 Output: `knowledge-base/brd/{ModuleName}.brd.json` (one per module, 113+ files)
@@ -106,7 +106,7 @@ Each BRD file contains:
 Then generate the interactive HTML report:
 
 ```bash
-node generate-report.js
+bun generate-report.js
 ```
 
 Output: `knowledge-base/extraction-report.html` — open in browser. Shows:
@@ -218,10 +218,10 @@ This is the recommended recording setup:
 cd <path-to-your-workspace>/extraction   # set to your local clone — see pipeline/config.json
 
 # Phase 2: full extraction (60 seconds on the full Apex project)
-node run.js 2 xml
+bun run.js 2 xml
 
 # Phase 3: BRD generation
-node run.js 3
+bun run.js 3
 ```
 
 **Claude chat** (open in any window):
@@ -240,7 +240,7 @@ Use these prompts in order when starting a real migration engagement:
 
 ### Step 2 — Run the extraction
 
-> "Run Phase 2 of the extraction pipeline: `node run.js 2 xml` from the `extraction/` directory. Then summarise `knowledge-base/summary.md`. How many entities, screens, logics, and cross-references were found? Are there any gaps?"
+> "Run Phase 2 of the extraction pipeline: `bun run.js 2 xml` from the `extraction/` directory. Then summarise `knowledge-base/summary.md`. How many entities, screens, logics, and cross-references were found? Are there any gaps?"
 
 ### Step 3 — Understand the data model
 

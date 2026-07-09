@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 'use strict';
 
 const { spawn } = require('child_process');
@@ -8,13 +8,16 @@ const fs   = require('fs');
 const ROOT   = __dirname;
 const CONFIG = JSON.parse(fs.readFileSync(path.join(ROOT, 'config.json'), 'utf8'));
 const KB_DIR = CONFIG.knowledgeBaseDir || path.join(ROOT, 'knowledge-base');
+// Spawn JS children with whatever runtime is running this script (bun on the standard
+// toolchain — see README) instead of hardcoding 'node'. Quoted because spawn uses shell:true.
+const JS = '"' + process.execPath + '"';
 
 const args   = process.argv.slice(2);
 const phase  = args[0] || '1';          // '1' | '2' | 'all'
 const only   = args[1] || '';           // 'xml' | 'cs' | 'js' | 'db' | 'excel' | 'docs' | ''
 
 if (!['1', '2', '3', 'all'].includes(phase)) {
-  console.error('Usage: node run.js <1|2|3|all> [xml|cs|js|db|excel|docs]');
+  console.error('Usage: bun run.js <1|2|3|all> [xml|cs|js|db|excel|docs]');
   process.exit(1);
 }
 
@@ -40,11 +43,11 @@ async function phase1() {
 
   const jobs = [];
   if (!only || only === 'xml')
-    jobs.push(run('node', [path.join('samplers', 'xml-sampler.js'), CONFIG.blueprintDir, '8'], 'xml-sampler'));
+    jobs.push(run(JS, [path.join('samplers', 'xml-sampler.js'), CONFIG.blueprintDir, '8'], 'xml-sampler'));
   if (!only || only === 'cs')
-    jobs.push(run('node', [path.join('samplers', 'cs-sampler.js'), path.join(CONFIG.shareDir, 'Outsystems_output_sourcecode', 'full'), '10'], 'cs-sampler'));
+    jobs.push(run(JS, [path.join('samplers', 'cs-sampler.js'), path.join(CONFIG.shareDir, 'Outsystems_output_sourcecode', 'full'), '10'], 'cs-sampler'));
   if (!only || only === 'js')
-    jobs.push(run('node', [path.join('samplers', 'js-sampler.js'), path.join(CONFIG.shareDir, 'Outsystems_output_sourcecode', 'full', 'scripts'), '10'], 'js-sampler'));
+    jobs.push(run(JS, [path.join('samplers', 'js-sampler.js'), path.join(CONFIG.shareDir, 'Outsystems_output_sourcecode', 'full', 'scripts'), '10'], 'js-sampler'));
   if (!only || only === 'db')
     jobs.push(run('python', [path.join('samplers', 'db-sampler.py'), CONFIG.dbDir, '--sample-n', '5'], 'db-sampler'));
   if (!only || only === 'excel')
@@ -73,11 +76,11 @@ async function phase2() {
 
   const jobs = [];
   if (!only || only === 'xml')
-    jobs.push(run('node', [path.join('extractors', 'xml-extractor.js'), CONFIG.blueprintDir], 'xml-extractor'));
+    jobs.push(run(JS, [path.join('extractors', 'xml-extractor.js'), CONFIG.blueprintDir], 'xml-extractor'));
   if (!only || only === 'cs')
-    jobs.push(run('node', [path.join('extractors', 'cs-extractor.js'), path.join(CONFIG.shareDir, 'Outsystems_output_sourcecode', 'full')], 'cs-extractor'));
+    jobs.push(run(JS, [path.join('extractors', 'cs-extractor.js'), path.join(CONFIG.shareDir, 'Outsystems_output_sourcecode', 'full')], 'cs-extractor'));
   if (!only || only === 'js')
-    jobs.push(run('node', [path.join('extractors', 'js-extractor.js'), path.join(CONFIG.shareDir, 'Outsystems_output_sourcecode', 'full', 'scripts')], 'js-extractor'));
+    jobs.push(run(JS, [path.join('extractors', 'js-extractor.js'), path.join(CONFIG.shareDir, 'Outsystems_output_sourcecode', 'full', 'scripts')], 'js-extractor'));
   if (!only || only === 'db')
     jobs.push(run('python', [path.join('extractors', 'db-extractor.py'), CONFIG.dbDir], 'db-extractor'));
   if (!only || only === 'excel')
@@ -96,7 +99,7 @@ async function phase2() {
   }
 
   console.log('\nRunning merger...');
-  await run('node', [path.join('lib', 'merger.js')], 'merger');
+  await run(JS, [path.join('lib', 'merger.js')], 'merger');
   console.log(`Phase 2 complete. Knowledge base: ${KB_DIR}`);
 }
 

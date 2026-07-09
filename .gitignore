@@ -15,6 +15,7 @@ sources/
 knowledge-base/
 *.mpr
 *.mpr.backup
+*.mpr.lock
 
 # WIP skills — machine-local drafts, not ready to publish
 wip/

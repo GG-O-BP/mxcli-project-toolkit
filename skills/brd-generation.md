@@ -138,8 +138,8 @@ Before writing BRDs manually, run the automated BRD mapper layer if a code extra
 This produces a `{ModuleName}.brd.json` scaffold per module in `knowledge-base/brd/`.
 
 ```bash
-node run.js 3           # brd-mappers/ → knowledge-base/brd/*.brd.json
-node generate-report.js # → knowledge-base/extraction-report.html
+bun run.js 3            # brd-mappers/ → knowledge-base/brd/*.brd.json
+bun generate-report.js  # → knowledge-base/extraction-report.html
 ```
 
 Each auto-generated BRD contains:

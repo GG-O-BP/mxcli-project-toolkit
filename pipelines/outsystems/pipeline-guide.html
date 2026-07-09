@@ -299,19 +299,19 @@
         <div class="phase-box" onclick="show('phase2')">
           <div class="num">Phase 2</div>
           <div class="title">Extract</div>
-          <div class="cmd">node run.js 2 xml</div>
+          <div class="cmd">bun run.js 2 xml</div>
         </div>
         <div class="phase-arrow">→</div>
         <div class="phase-box" onclick="show('phase3')">
           <div class="num">Phase 3</div>
           <div class="title">BRD Scaffold</div>
-          <div class="cmd">node run.js 3</div>
+          <div class="cmd">bun run.js 3</div>
         </div>
         <div class="phase-arrow">→</div>
         <div class="phase-box" onclick="show('phase4')">
           <div class="num">Phase 4</div>
           <div class="title">Report &amp; Review</div>
-          <div class="cmd">node generate-report.js</div>
+          <div class="cmd">bun generate-report.js</div>
         </div>
       </div>
       <div class="callout callout-blue" style="margin-top:16px">
@@ -323,16 +323,16 @@
       <h3>Quickstart</h3>
       <p>All commands run from <code>OS-migration-skills/pipeline/</code>. Make sure <code>config.json</code> points to your XML source folder first (see Phase 2).</p>
 <pre><code># Phase 2 — extract all 114 OS XML files → JSON knowledge base
-node run.js 2 xml
+bun run.js 2 xml
 
 # Phase 3 — generate BRD scaffolds (one per module)
-node run.js 3
+bun run.js 3
 
 # Phase 4 — build interactive HTML report
-node generate-report.js
+bun generate-report.js
 # Open: knowledge-base/extraction-report.html in your browser</code></pre>
       <div class="callout callout-blue">
-        <strong>First time or changed XML source?</strong> Run <code>node run.js 1 xml</code> first to validate the extractor on a small sample before committing to all 114 files. Check <code>samples/schema.json</code> — if the fields look wrong, fix the extractor before running Phase 2.
+        <strong>First time or changed XML source?</strong> Run <code>bun run.js 1 xml</code> first to validate the extractor on a small sample before committing to all 114 files. Check <code>samples/schema.json</code> — if the fields look wrong, fix the extractor before running Phase 2.
       </div>
     </div>
 
@@ -479,7 +479,7 @@ node generate-report.js
     <div class="card">
       <h3>Step 3 — Optional: validate the extractor on a sample</h3>
       <p>Run this before Phase 2 if you are doing this for the first time or after changing the XML source:</p>
-<pre><code>node run.js 1 xml</code></pre>
+<pre><code>bun run.js 1 xml</code></pre>
       <p>Output: <code>pipeline/samples/schema.json</code> — a small preview of what the extractor will produce. Check that entity attributes, logic kinds, and screen summaries look correct. If something looks wrong, fix <code>extractors/xml-extractor.js</code> now — it is much faster to iterate on 8 files than 114.</p>
     </div>
 
@@ -516,8 +516,8 @@ node generate-report.js
 
     <div class="card">
       <h3>Command</h3>
-<pre><code>node run.js 2 xml        # XML only (most common — covers full OS stack)
-node run.js 2            # all configured source types</code></pre>
+<pre><code>bun run.js 2 xml        # XML only (most common — covers full OS stack)
+bun run.js 2            # all configured source types</code></pre>
       <p>Output files in <code>knowledge-base/</code>:</p>
       <table>
         <tr><th>File</th><th>Contains</th></tr>
@@ -566,7 +566,7 @@ node run.js 2            # all configured source types</code></pre>
 
     <div class="card">
       <h3>Command</h3>
-<pre><code>node run.js 3</code></pre>
+<pre><code>bun run.js 3</code></pre>
       <p>Output: <code>knowledge-base/brd/{ModuleName}.brd.json</code> (one per module)</p>
       <p>Also writes: <code>knowledge-base/brd/generation-report.json</code> (counts + warnings)</p>
     </div>
@@ -640,7 +640,7 @@ node run.js 2            # all configured source types</code></pre>
 
     <div class="card">
       <h3>Command</h3>
-<pre><code>node generate-report.js
+<pre><code>bun generate-report.js
 # → knowledge-base/extraction-report.html</code></pre>
       <p>Open the HTML file in any modern browser (Edge, Chrome). No server needed — fully self-contained.</p>
     </div>

@@ -195,7 +195,7 @@ mxcli-project-toolkit/
 git clone https://github.com/MendixMau/mxcli-project-toolkit.git ~/Mendix/mxcli-project-toolkit
 ```
 각 프로젝트의 CLAUDE.md가 `~/Mendix/mxcli-project-toolkit`을 참조합니다. 업데이트는 `git pull`로 받습니다.
-자체 완결형 인계가 필요하면 대신 git submodule로 추가하세요. 파이프라인별로 `pipelines/<x>/pipeline` 안에서 `npm install`을 실행하세요(node_modules는 gitignore 처리됨).
+자체 완결형 인계가 필요하면 대신 git submodule로 추가하세요. JS 툴체인은 **bun 전용**입니다(런타임 + 패키지 매니저) — 파이프라인별로 `pipelines/<x>/pipeline` 안에서 `bun install`을 실행하세요(node_modules는 gitignore 처리됨).
 
 ### Baseline routing — 모든 새 프로젝트의 CLAUDE.md에 복사해 넣을 것
 

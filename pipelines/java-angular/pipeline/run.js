@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 'use strict';
 
 const { spawn } = require('child_process');
@@ -7,6 +7,9 @@ const fs   = require('fs');
 
 const ROOT   = __dirname;
 const CONFIG = JSON.parse(fs.readFileSync(path.join(ROOT, 'config.json'), 'utf8'));
+// Spawn JS children with whatever runtime is running this script (bun on the standard
+// toolchain — see README) instead of hardcoding 'node'. Quoted because spawn uses shell:true.
+const JS = '"' + process.execPath + '"';
 // Per-project analysis folder (see migration-pipeline.md's "Project Workspace Convention") —
 // falls back to a local knowledge-base/ (gitignored) only if config.json has no knowledgeBaseDir set.
 const KB_DIR = CONFIG.knowledgeBaseDir || path.join(ROOT, 'knowledge-base');
@@ -17,7 +20,7 @@ const phase  = args[0] || '1';          // '1' | '2' | '3' | 'all'
 const only   = args[1] || '';           // 'java' | 'angular' | ''
 
 if (!['1', '2', '3', 'all'].includes(phase)) {
-  console.error('Usage: node run.js <1|2|3|all> [java|angular]');
+  console.error('Usage: bun run.js <1|2|3|all> [java|angular]');
   process.exit(1);
 }
 
@@ -51,9 +54,9 @@ async function phase2() {
 
   const jobs = [];
   if (!only || only === 'java')
-    jobs.push(run('node', [path.join('extractors', 'java-extractor.js'), CONFIG.javaSourceDir, KB_DIR], 'java-extractor'));
+    jobs.push(run(JS, [path.join('extractors', 'java-extractor.js'), CONFIG.javaSourceDir, KB_DIR], 'java-extractor'));
   if (!only || only === 'angular')
-    jobs.push(run('node', [path.join('extractors', 'angular-extractor.js'), CONFIG.angularSourceDir, KB_DIR], 'angular-extractor'));
+    jobs.push(run(JS, [path.join('extractors', 'angular-extractor.js'), CONFIG.angularSourceDir, KB_DIR], 'angular-extractor'));
 
   const results = await Promise.all(jobs);
   const failed = results.filter(r => !r.ok);
@@ -66,7 +69,7 @@ async function phase2() {
   }
 
   console.log('\nRunning merger...');
-  await run('node', [path.join('lib', 'merger.js')], 'merger');
+  await run(JS, [path.join('lib', 'merger.js')], 'merger');
   console.log(`Phase 2 complete. Knowledge base: ${KB_DIR}`);
 }
 

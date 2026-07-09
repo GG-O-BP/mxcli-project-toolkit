@@ -192,8 +192,8 @@ knowledge-base/
 auto-generate one structured `{ModuleName}.brd.json` per source module — purely off the code-derived KB, so it's the fastest path to a first reviewable artifact **within that confirmed scope**:
 
 ```bash
-node run.js 3           # generates knowledge-base/brd/*.brd.json
-node generate-report.js # generates knowledge-base/extraction-report.html
+bun run.js 3            # generates knowledge-base/brd/*.brd.json
+bun generate-report.js  # generates knowledge-base/extraction-report.html
 ```
 
 The `brd-mappers/` layer (in `pipeline/generators/brd-mappers/`) contains one mapper per Mendix concept:

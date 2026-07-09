@@ -52,9 +52,9 @@ KB files (this skill) cover **document extraction** (xlsx, docx, PDF → KB_*.md
 For **code extraction** (XML, Java, C# → JSON knowledge base), use the pipeline directly:
 
 ```bash
-node run.js 2 xml       # extracts all XMLs → knowledge-base/ JSONs (full corpus, not a subset)
-node run.js 3           # BRD mapper → knowledge-base/brd/*.brd.json
-node generate-report.js # → knowledge-base/extraction-report.html (open in browser for review)
+bun run.js 2 xml        # extracts all XMLs → knowledge-base/ JSONs (full corpus, not a subset)
+bun run.js 3            # BRD mapper → knowledge-base/brd/*.brd.json
+bun generate-report.js  # → knowledge-base/extraction-report.html (open in browser for review)
 ```
 
 The HTML report is the primary review artifact after code extraction — it shows all 114 modules,

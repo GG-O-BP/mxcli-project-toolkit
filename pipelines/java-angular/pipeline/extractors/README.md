@@ -91,13 +91,13 @@ console.log(`Sampled ${n} {type} files`);
 In `phase1()`:
 ```js
 if (!only || only === '{type}')
-  jobs.push(run('node', [path.join('samplers', '{type}-sampler.js'), CONFIG.{type}Dir, '8'], '{type}-sampler'));
+  jobs.push(run(JS, [path.join('samplers', '{type}-sampler.js'), CONFIG.{type}Dir, '8'], '{type}-sampler'));
 ```
 
 In `phase2()`:
 ```js
 if (!only || only === '{type}')
-  jobs.push(run('node', [path.join('extractors', '{type}-extractor.js'), CONFIG.{type}Dir], '{type}-extractor'));
+  jobs.push(run(JS, [path.join('extractors', '{type}-extractor.js'), CONFIG.{type}Dir], '{type}-extractor'));
 ```
 
 Add `{type}Dir` to `config.json`.

@@ -1,6 +1,6 @@
 # BRD Validation — Consistency Checks & Iterate-to-Clean
 **Purpose:** Once BRDs exist — whether the auto-generated per-module scaffold from
-`node run.js 3` or the enriched `F{NNN}.brd.json` from `brd-generation.md` — validate them
+`bun run.js 3` or the enriched `F{NNN}.brd.json` from `brd-generation.md` — validate them
 against every KB source before calling the extraction/mapping pass done. Catches duplicates,
 conflicts between code and documents, orphaned concepts, and broken relationships that neither
 the extractor nor the mapper layer currently detects.
@@ -12,7 +12,7 @@ cross-checks against)
 
 ## When to Use This Skill
 
-- After `node run.js 3` has produced scaffold BRDs and a `KB.md` exists from Phase 4 (document
+- After `bun run.js 3` has produced scaffold BRDs and a `KB.md` exists from Phase 4 (document
   discovery) to cross-reference against
 - After a manual BRD enrichment pass (`brd-generation.md`), before treating a BRD as final
 - Any time extractor or mapper logic changes and you need to confirm nothing regressed
@@ -108,10 +108,10 @@ Once `KB.md` exists (Phase 4), reconcile each use case against it:
   `code-inferred`. This is not itself a finding; it just means Phase 4 didn't cover that area.
 
 **Update these fields in place on the BRD JSON, not in a separate reconciliation file** — this
-is what makes re-running `node generate-report.js` produce the combined code+doc report for
+is what makes re-running `bun generate-report.js` produce the combined code+doc report for
 free, and it's exactly what `brd-mappers/index.js`'s overwrite guard exists to protect: a BRD
 with any `doc-confirmed`/`doc-conflict` use case (or a resolved `openQuestions` entry) will not
-be clobbered by a later `node run.js 3` — the fresh scaffold goes to
+be clobbered by a later `bun run.js 3` — the fresh scaffold goes to
 `{module}.brd.scaffold.json` instead.
 
 ---
@@ -130,7 +130,7 @@ run validator  →  validation-report.md
           - genuine business conflict → record openQuestions on the BRD, don't silently resolve
           - stale/incomplete BRD     → re-run the enrichment pass (brd-generation.md)
                         │
-        re-run: node run.js 2 xml && node run.js 3 && validator
+        re-run: bun run.js 2 xml && bun run.js 3 && validator
                         │
               repeat until clean or only accepted gaps remain
 ```
@@ -151,7 +151,7 @@ this loop has a stopping point instead of running forever.
 - **Fix the extractor/mapper, not the JSON output by hand, for anything that should hold for
   every module** (a wrong purpose-inference regex, a missing gap code). If a mapper's assumption
   is wrong for this project, patch the mapper — that class of fix isn't protected by the
-  overwrite guard and will be silently redone by the next `node run.js 3`.
+  overwrite guard and will be silently redone by the next `bun run.js 3`.
 - **Module-specific enrichment (use-case review, doc reconciliation) is safe to hand-edit in
   place** — that's exactly what the overwrite guard in `brd-mappers/index.js` protects (see
   check #6 above). Don't confuse the two: structural/mapper-level fixes go in code, per-module

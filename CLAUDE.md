@@ -36,10 +36,10 @@ The source-specific extraction pipelines now live **in this repo** under `pipeli
 
 | Source platform | Pipeline | Run |
 |-----------------|----------|-----|
-| OutSystems | `pipelines/outsystems/` (imported with history from the former `os-migration-pipeline` repo) | `cd pipelines/outsystems/pipeline && npm install` — see its `README.md` / `pipeline-guide.html` |
-| Java + Angular / Spring Boot | `pipelines/java-angular/` | `cd pipelines/java-angular/pipeline && npm install` — see its `README.md` |
+| OutSystems | `pipelines/outsystems/` (imported with history from the former `os-migration-pipeline` repo) | `cd pipelines/outsystems/pipeline && bun install` — see its `README.md` / `pipeline-guide.html` |
+| Java + Angular / Spring Boot | `pipelines/java-angular/` | `cd pipelines/java-angular/pipeline && bun install` — see its `README.md` |
 
-`node_modules/` is gitignored — run `npm install` locally per pipeline. Curated sample outputs live under each pipeline (e.g. `pipelines/outsystems/sample-outputs/`).
+**JS toolchain is bun-only** (runtime + package manager + `bunx`) — do not assume node/npm are installed. `node_modules/` is gitignored — run `bun install` locally per pipeline. Curated sample outputs live under each pipeline (e.g. `pipelines/outsystems/sample-outputs/`).
 
 ## Consuming this toolkit (reference model)
 Clone once to a standard location and point projects at it:

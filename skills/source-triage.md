@@ -11,7 +11,7 @@
 - Starting a migration from a new or unfamiliar source stack
 - Deciding whether to build a new extractor or reuse an existing pipeline (`pipelines/outsystems/`, `pipelines/java-angular/`) — extraction is always automated regardless of app size; the open question is which pipeline
 - The source app is large enough that "migrate everything at once" feels risky, or big enough that even module-level decomposition (`modularize-domain.md`) might not be sufficient
-- You're about to run `node run.js 3` (BRD scaffolding) on a stack nobody has validated extraction quality for yet
+- You're about to run `bun run.js 3` (BRD scaffolding) on a stack nobody has validated extraction quality for yet
 
 ---
 

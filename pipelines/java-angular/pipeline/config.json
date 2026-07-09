@@ -1,8 +1,8 @@
 {
-  "_comment": "PROJECT-OWNED config for the shared java-angular pipeline. This is the source of truth for WMS-LargeSource. run.js has no config-path override, so sync this into the toolkit before running: see sync-config.sh. Scope: Common/Master Data slice, backend-only (no Angular yet).",
-  "javaSourceDir":    "/Users/maurits.visser/Mendix/WMS-LargeSource-main/source/org.openwms.common.service.lib/src/main/java",
+  "_comment": "Set these paths after cloning — they point at YOUR local source workspace (never commit real paths). knowledgeBaseDir must point at analysis/<source-repo-name>/knowledge-base in your project workspace for a real run; empty falls back to a local gitignored knowledge-base/ (smoke tests only).",
+  "javaSourceDir":    "<path-to-java-source-root>",
   "angularSourceDir": "",
   "dbDir":            "",
-  "docsDir":          "/Users/maurits.visser/Mendix/WMS-LargeSource-main/source/org.openwms.common.service.lib",
-  "knowledgeBaseDir": "/Users/maurits.visser/Mendix/WMS-LargeSource-main/analysis/knowledge-base"
+  "docsDir":          "",
+  "knowledgeBaseDir": ""
 }
