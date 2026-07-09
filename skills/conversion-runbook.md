@@ -17,7 +17,7 @@
 
 | 순서 | 단계 | 하드 게이트 ✋ |
 |---|---|---|
-| P | 착수 준비 (워크스페이스·CLAUDE.md·에이전트·인테이크) | — |
+| P | 착수 준비 (워크스페이스·도구 점검 → CLAUDE.md·에이전트 → 인테이크) | — |
 | 0 | TRIAGE (인벤토리 → 파이프라인 결정 → 범위) | ✋ 범위·파이프라인 서명 |
 | 1 | ANALYSIS (A: 코드 추출 ∥ B: 문서 KB) | — |
 | 2 | REQUIREMENTS (BRD 스캐폴드 → 보강 → 검증) | — |
@@ -44,13 +44,43 @@
 
 ## P단계 — 착수 준비
 
-### P-1. 워크스페이스
+### P-1. 워크스페이스 체크리스트
 
-- [ ] `<SOURCE_DIR>`에 원본 소스 확보 — 읽기 전용으로 취급, 원본을 절대 수정하지 않는다
-- [ ] `<ANALYSIS_DIR>` 생성
-- [ ] `<WORKSPACE>`는 자체 git 저장소다 — 툴킷 저장소가 아니다. (소스를 툴킷 폴더 밑에 두는 변칙 구성이라면 `sources/`·`analysis/`·`knowledge-base/`·`*.mpr`가 툴킷 `.gitignore`에 있는지 확인)
+각 항목은 확인 명령의 결과로 판정한다 — "아마 됐을 것"은 통과가 아니다.
 
-### P-2. 프로젝트 CLAUDE.md + 서브에이전트
+- [ ] 툴킷 클론이 존재하고 최신이다 — `git -C <TOOLKIT> pull` 실행 후 `git -C <TOOLKIT> log -1 --oneline` 결과를 기록
+- [ ] `<WORKSPACE>`가 존재하고 **자체 git 저장소**다 — `git -C <WORKSPACE> rev-parse --show-toplevel` 결과가 `<WORKSPACE>`이고, `<TOOLKIT>`과 다른 경로다
+- [ ] `<SOURCE_DIR>`에 원본 소스 확보 — 읽기 전용으로 취급, 원본을 절대 수정하지 않는다. 총 파일 수와 최상위 구조를 세어 메모해 둔다 (P-4 인테이크와 1-A 추출 커버리지 대조의 기준값)
+- [ ] `<ANALYSIS_DIR>` 생성됨 (하위 `knowledge-base/`는 파이프라인이 만들므로 미리 만들 필요 없음)
+- [ ] `<WORKSPACE>/.gitignore` 정책 확정 — 최소 `node_modules/`와 `*.mpr.lock`은 제외. 고객 원본 소스(`sources/`)를 커밋할지는 라이선스·보안 기준으로 결정하고 그 결정을 기록
+- [ ] (변칙 구성 가드) 소스를 툴킷 폴더 밑에 두었다면: `git -C <TOOLKIT> check-ignore sources analysis knowledge-base` 가 전부 매치되는지 확인 — 프로젝트 산출물이 툴킷에 커밋될 수 있는 상태면 진행 금지
+- [ ] 이 런북 사본(`<WORKSPACE>/CONVERSION-RUNBOOK.md`)의 프롬프트 블록에 치환 안 된 `<...>` 플레이스홀더가 없다
+
+### P-2. 도구 체크리스트
+
+"지금 필수"와 "예약"(해당 단계 시작 전까지 준비)을 구분한다. 예약 항목이 아직 없어도 P단계는 통과하지만, 해당 단계의 전제 확인에서 반드시 재점검한다.
+
+**지금(P 시점) 필수:**
+
+- [ ] git — `git --version`
+- [ ] Node.js — `node --version` (추출 파이프라인 실행용, LTS 권장)
+- [ ] npm — `npm --version`. 실제 `npm install`은 0단계에서 파이프라인이 확정된 뒤 해당 `pipeline/` 디렉터리에서 실행
+
+**예약 — 5단계(BUILD) 시작 전까지:**
+
+- [ ] Mendix Studio Pro 설치 — 버전이 `<TARGET_MPR>`의 Mendix 버전과 일치
+- [ ] mxcli — `mxcli --version` 동작. 이 버전의 알려진 버그를 `<TOOLKIT>/bug-logs/mxcli-bugs.md`에서 미리 확인
+- [ ] `<TARGET_MPR>` 생성/확보 — Studio Pro에서 열리고, 빈 상태에서 Run Locally가 성공
+- [ ] 로컬 실행 URL/포트 기록 — stale-build 프로토콜의 HTTP 200 확인에 사용
+
+**예약 — 6단계(TEST) 시작 전까지:**
+
+- [ ] Playwright 실행 환경 — `npx playwright --version`
+- [ ] 시드 투입과 DB 어설션에 쓸 DB 접근 경로 확인 (`learned-db-assertions.md` 방식이 이 프로젝트 환경에서 실행 가능한지)
+
+- [ ] **게이트:** "지금 필수" 전부 통과. 예약 항목은 5단계·6단계의 전제 확인 항목에서 재점검된다.
+
+### P-3. 프로젝트 CLAUDE.md + 서브에이전트
 
 - [ ] 프롬프트 실행
 
@@ -73,12 +103,6 @@
   ```
 
 - [ ] 산출물 확인: `<WORKSPACE>/CLAUDE.md`(Baseline routing 포함), `.claude/agents/*.md` 3종
-
-### P-3. 도구
-
-- [ ] Node.js 사용 가능 (추출 파이프라인 실행용). `npm install`은 0단계에서 파이프라인이 결정된 뒤 해당 `pipeline/` 디렉터리에서 실행
-- [ ] Mendix Studio Pro + mxcli 설치·버전 확인 — **5단계 전까지만 준비되면 됨.** 지금 없어도 P~4단계는 전부 진행 가능
-- [ ] `<TARGET_MPR>` — 마찬가지로 5단계 전까지 준비
 
 ### P-4. 인테이크 — 표준 8문항
 
@@ -325,7 +349,7 @@
 
 ## 5단계 — BUILD (여기서부터 mxcli)
 
-- [ ] 전제 확인: `<TARGET_MPR>` 존재 + Studio Pro에서 열림, `mxcli --version` 동작, 프로젝트 CLAUDE.md의 Baseline routing이 툴킷 최신과 일치
+- [ ] 전제 확인: P-2 도구 체크리스트의 "5단계 예약" 4항목 전부 통과(`<TARGET_MPR>` + Studio Pro + mxcli + 실행 URL), 프로젝트 CLAUDE.md의 Baseline routing이 툴킷 최신과 일치
 - [ ] 프롬프트 실행 (빌드 계획의 스크립트/모듈 단위로 반복)
 
   ```
@@ -351,6 +375,7 @@
 
 ## 6단계 — TEST
 
+- [ ] 전제 확인: P-2 도구 체크리스트의 "6단계 예약" 2항목 통과 (Playwright, DB 접근 경로)
 - [ ] 프롬프트 실행
 
   ```
