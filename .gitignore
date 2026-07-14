@@ -8,14 +8,18 @@ build/
 target/
 *.log
 
-# Project output must never live in the tool repo (see README.md "Consuming this toolkit")
+# Project output is never committed — conversions run inside this clone,
+# in these gitignored areas (see CONVERSION-RUNBOOK.md "커밋 경계")
 /workspaces/
 analysis/
 sources/
+mendix/
 knowledge-base/
 *.mpr
 *.mpr.backup
 *.mpr.lock
+CLAUDE.local.md
+.claude/agents/
 
 # WIP skills — machine-local drafts, not ready to publish
 wip/

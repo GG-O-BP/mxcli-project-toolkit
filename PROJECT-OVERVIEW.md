@@ -13,7 +13,7 @@
 2. **추출 파이프라인(`pipelines/`)** — 소스 코드를 AST 수준에서 파싱해 구조화된 지식 베이스(KB JSON)와 요구사항 문서(BRD JSON)를 자동 생성하는 Node.js 도구.
 3. **운영 지식(`bug-logs/`, `process/`, `examples/`)** — mxcli CLI의 알려진 버그와 우회법, 실제 프로젝트 회고에서 나온 프로세스 개선안, 실전 마이그레이션 예제.
 
-핵심 설계 사상은 **"한 번 클론, 모든 프로젝트가 참조"** 입니다. 각 마이그레이션 프로젝트는 이 저장소를 표준 위치(예: `~/Mendix/mxcli-project-toolkit`)에 클론해 두고 자기 `CLAUDE.md`에서 참조만 합니다. 복사본이 없으므로 버전이 어긋나지 않고, `git pull` 한 번으로 모든 프로젝트가 최신 지식을 받습니다. 반대로 **프로젝트 산출물(`analysis/`, `sources/`, `knowledge-base/`, `*.mpr`, 빌드 계획, 세션 노트)은 절대 이 저장소에 들어오지 않습니다** — `.gitignore`로 강제되며, 재사용 가능한 패턴만 `skills/learned-*.md`로 승격됩니다.
+핵심 설계 사상은 **"클론 하나가 곧 작업장"** 입니다. 컨버전은 이 저장소 클론 안에서 직접 진행됩니다(`CONVERSION-RUNBOOK.md` 참조) — 컨버전별 산출물은 `sources/<이름>/`(원본), `analysis/<이름>/`(분석·설계·빌드 계획·세션 노트), `mendix/<이름>/`(대상 .mpr), 루트 `CLAUDE.local.md`(프로젝트 컨텍스트)에 놓입니다. 이 영역은 전부 `.gitignore`로 커밋에서 제외되므로, **커밋되는 것은 재사용 자산뿐입니다** — `git pull` 한 번으로 최신 지식을 받으면서도 프로젝트 데이터는 로컬에만 남고, 재사용 가능한 패턴만 `skills/learned-*.md`로 승격됩니다.
 
 ### 먼저 알아야 할 핵심 용어
 
@@ -24,7 +24,7 @@
 | **BRD** | Business Requirements Document. 기능 영역 단위(`F{NNN}-{topic}.brd.json`)의 구조화된 JSON으로, `useCases`, `domainEntities`, `microflows`, `pages`, `integrations`, `openQuestions` 배열을 담습니다. 파이프라인이 스캐폴드를 자동 생성하고 사람이 보강하며, 최종적으로 MDL 스크립팅의 직접 입력이 됩니다. |
 | **KB** | Knowledge Base. 두 종류가 있습니다 — 코드 KB(파이프라인이 추출한 `entities.json`, `logics.json`, `screens.json` 등)와 문서 KB(Excel/Word/PDF 사양서에서 추출한 `KB_*.md`). |
 | **CE 에러** | Mendix 모델 일관성 오류(Consistency Error). 빌드 게이트의 1차 기준이 "CE 에러 0"입니다. |
-| **Baseline routing** | 상황과 무관하게 **모든** MDL 작성 세션에 적용되어야 하는 스킬 목록. 새 프로젝트의 `CLAUDE.md`에 그대로 복사해 넣어 "우연히 발견되기를 기대하는" 누락을 방지합니다. |
+| **Baseline routing** | 상황과 무관하게 **모든** MDL 작성 세션에 적용되어야 하는 스킬 목록. 컨버전의 프로젝트 컨텍스트(`CLAUDE.local.md`)에 그대로 복사해 넣어 "우연히 발견되기를 기대하는" 누락을 방지합니다. |
 
 ---
 
@@ -172,7 +172,7 @@ Phase 3  BRD 생성     bun run.js 3    모듈별로 5개 매퍼 실행 → {mod
 - **신뢰도 자동 산정**: 미해석 참조(gap) 수 기준 0개→high, 1~3개→medium, 4개 이상→low. BRD 리뷰 우선순위로 사용됩니다.
 - **보강 보호 장치**: 재실행 시 기존 BRD에 리뷰 흔적(`reviewStatus`, doc-confirmed)이 있으면 새 스캐폴드를 `.brd.scaffold.json`으로 따로 저장해 사람 작업을 덮어쓰지 않습니다.
 - **보고서**: `extraction-report.html`(기술 대시보드: 원시 항목·모듈별 분류·gap 목록)과 gaps 리포트를 생성합니다.
-- **설정**: `pipeline/config.json`은 placeholder로 배포됩니다. 클론 후 로컬 소스 경로를 넣되 절대 커밋하지 않으며, `knowledgeBaseDir`은 반드시 **프로젝트 워크스페이스의** `analysis/knowledge-base`를 가리켜야 합니다(파이프라인 자신의 디렉토리 금지).
+- **설정**: `pipeline/config.json`은 placeholder로 배포됩니다. 추출 전에 로컬 소스 경로를 넣되 절대 커밋하지 않으며(커밋 경계의 유일한 예외인 추적 파일 로컬 수정), `knowledgeBaseDir`은 반드시 **툴킷 루트의** `analysis/<소스 폴더명>/knowledge-base`를 가리켜야 합니다(파이프라인 자신의 디렉토리 금지).
 
 ### 5-1. OutSystems 파이프라인 (`pipelines/outsystems/`)
 

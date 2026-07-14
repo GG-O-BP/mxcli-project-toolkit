@@ -1,0 +1,9 @@
+{
+  "_comment": "Set these paths after cloning — they point at YOUR local source workspace (never commit real paths). knowledgeBaseDir must point at analysis/<source-repo-name>/knowledge-base in your project workspace for a real run; empty falls back to a local gitignored knowledge-base/ (smoke tests only).",
+  "serverSourceDir": "<path-to-spring-mvc-server-source-root>",
+  "sqlSourceDir":    "",
+  "frontSourceDir":  "",
+  "knowledgeBaseDir": "",
+  "_brdModules_comment": "Module names to generate BRD scaffolds for (run.js step 3). Empty = all modules found in the knowledge base.",
+  "brdModules": []
+}

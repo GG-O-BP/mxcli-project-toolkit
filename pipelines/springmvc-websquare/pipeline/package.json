@@ -1,0 +1,17 @@
+{
+  "name": "springmvc-websquare-migration-pipeline",
+  "version": "0.1.0",
+  "type": "commonjs",
+  "scripts": {
+    "reports": "bun generate-report.js"
+  },
+  "trustedDependencies": [
+    "tree-sitter",
+    "tree-sitter-java"
+  ],
+  "dependencies": {
+    "glob": "^10.3.12",
+    "tree-sitter": "^0.21.1",
+    "tree-sitter-java": "^0.21.0"
+  }
+}

@@ -25,7 +25,7 @@ Load skill files **on demand when the task calls for it** — not all upfront.
 | Diagnosing a mxcli CLI error | `bug-logs/mxcli-bugs.md` |
 | Building the Playwright E2E suite after a build phase (golden path, edge cases, DB assertions) | `skills/e2e-harness-base.md` + `skills/learned-db-assertions.md` |
 | Understanding past process decisions | `process/process-learnings.md` |
-| Generating a new project's CLAUDE.md (Baseline routing + project-specific facts) | `skills/bootstrap-project.md` |
+| Generating a conversion's project context `CLAUDE.local.md` (Baseline routing + project-specific facts) | `skills/bootstrap-project.md` |
 | Setting up dev-process subagents (draft/gate/test) on a new project | `skills/agent-roles.md` |
 
 ## Conversion runbook (user-facing, not a skill)
@@ -41,17 +41,18 @@ The source-specific extraction pipelines now live **in this repo** under `pipeli
 
 **JS toolchain is bun-only** (runtime + package manager + `bunx`) — do not assume node/npm are installed. `node_modules/` is gitignored — run `bun install` locally per pipeline. Curated sample outputs live under each pipeline (e.g. `pipelines/outsystems/sample-outputs/`).
 
-## Consuming this toolkit (reference model)
-Clone once to a standard location and point projects at it:
-```
-git clone https://github.com/MendixMau/mxcli-project-toolkit.git ~/Mendix/mxcli-project-toolkit
-```
-Each project's CLAUDE.md references `~/Mendix/mxcli-project-toolkit` — one clone, no copies, no drift. For a self-contained handoff, add it as a git submodule instead.
+## Running conversions (in-repo model)
+Conversions run **inside this clone** — the toolkit repo itself is the working folder (see `CONVERSION-RUNBOOK.md`). Per-conversion areas are gitignored and never committed:
+- `sources/<name>/` — source input, read-only
+- `analysis/<name>/` — all analysis/design output (intake, KB, BRD, `architecture/` incl. build plan, `design/`, session notes)
+- `mendix/<name>/` — target Mendix project (`.mpr`), created at stage 5-0 via mxcli
+- `CLAUDE.local.md` (repo root) — per-conversion project context (paths, tool versions, project facts). **Never write project facts into this CLAUDE.md** — it is the toolkit's committed file; Claude Code auto-loads `CLAUDE.local.md` alongside it.
+- `.claude/agents/` — per-project dev-process subagents
 
-**Project output never lives here** — `analysis/`, `sources/`, `knowledge-base/`, `*.mpr` are gitignored. Each migration runs in its own workspace that *references* this repo.
+**Commit boundary:** only reusable assets are committed (skills, bug logs, runbook/pipeline improvements). The one tolerated local-only change to a tracked file is `pipelines/<x>/pipeline/config.json` local paths — never commit it. Any other project file showing in `git status` means the setup is broken (runbook P-1 item 4 fixes it).
 
-**A project's build plan and session notes live in that project's own repo, never here.** This is tools + skills + curated examples only — not a place to accumulate one project's architecture docs, numbered build plan, or running session diary. Promote a reusable pattern out of a project's own notes into `skills/learned-*.md` instead of leaving the whole plan here.
+**A conversion's build plan and session notes live in its `analysis/<name>/` area (gitignored), never in commits.** Promote a reusable pattern into `skills/learned-*.md` instead of committing a project's plan.
 
 ## Adding new skills
 Create `skills/{topic}.md` with a `# Title`, `**Purpose:**`, and step-by-step guide.
-Add it to the table above and commit. **If the skill applies on every MDL-writing session regardless of task** (universal discipline, not a phase-specific procedure), also add it to `README.md`'s "Baseline routing" table — that's the list consuming projects are told to copy into their own `CLAUDE.md`. A skill that only lives in the situational table here can go unnoticed by every project that isn't actively hunting for it.
+Add it to the table above and commit. **If the skill applies on every MDL-writing session regardless of task** (universal discipline, not a phase-specific procedure), also add it to `README.md`'s "Baseline routing" table — that's the list every conversion copies into its project context `CLAUDE.local.md` (and update any in-progress conversion's `CLAUDE.local.md` too). A skill that only lives in the situational table here can go unnoticed by every conversion that isn't actively hunting for it.

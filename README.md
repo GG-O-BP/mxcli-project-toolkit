@@ -19,7 +19,7 @@ OS 마이그레이션, Java/Angular 마이그레이션, 기타 고객 통합 작
 4. 앱이 살아있는지 확인: `curl -s -o /dev/null -w "%{http_code}" http://localhost:PORT/login.html` → `200`
 5. **그런 다음에야** 스크린샷을 찍거나 UI 검증을 실행
 
-**새 프로젝트를 설정할 때 이 규칙을 그 프로젝트의 CLAUDE.md에 추가하세요** — 모든 에이전트 세션이 이 규칙에 구속되도록. 기존 프로젝트 CLAUDE.md의 "Screenshot & UX audit rule" 섹션을 템플릿으로 복사하면 됩니다.
+**새 컨버전을 설정할 때(P-3) 이 규칙을 프로젝트 컨텍스트(`CLAUDE.local.md`)에 추가하세요** — 모든 에이전트 세션이 이 규칙에 구속되도록. 기존 프로젝트 컨텍스트의 "Screenshot & UX audit rule" 섹션을 템플릿으로 복사하면 됩니다.
 
 ---
 
@@ -116,7 +116,7 @@ mxcli-project-toolkit/
     assess-migration.md         ← 사전 마이그레이션 평가
     migrate-general.md          ← 소스에 무관한 범용 마이그레이션 가이드
     migrate-outsystems.md       ← OutSystems 전용 마이그레이션 가이드
-    bootstrap-project.md        ← 새 프로젝트의 CLAUDE.md 생성: Baseline routing + 프로젝트 고유 사실
+    bootstrap-project.md        ← 컨버전의 프로젝트 컨텍스트(CLAUDE.local.md) 생성: Baseline routing + 프로젝트 고유 사실
     agent-roles.md              ← 도구 권한을 한정한 프로젝트별 mdl/gate/test 서브에이전트 생성
     learned-*.md                ← 실제 프로젝트에서 검증된 학습 내용
   pipelines/                    ← 소스별 추출 도구 (코드; node_modules는 gitignore 처리)
@@ -160,7 +160,7 @@ mxcli-project-toolkit/
 | OutSystems 앱 마이그레이션 | `migrate-outsystems.md` |
 | OS 또는 Java/Angular 추출 파이프라인 실행 | `pipelines/outsystems/` · `pipelines/java-angular/` |
 | 실제 프로젝트에서 전체 흐름이 어떻게 맞물리는지 확인 | `examples/outsystems-migration/` |
-| 새 프로젝트의 CLAUDE.md 생성 (Baseline routing + 프로젝트 고유 사실) | `bootstrap-project.md` |
+| 컨버전의 프로젝트 컨텍스트(CLAUDE.local.md) 생성 (Baseline routing + 프로젝트 고유 사실) | `bootstrap-project.md` |
 | 새 프로젝트에 개발 프로세스 서브에이전트 구성 (draft/gate/test 분리) | `agent-roles.md` |
 
 ---
@@ -190,16 +190,15 @@ mxcli-project-toolkit/
 
 ## 이 툴킷 사용하기
 
-**참조 모델(기본):** 한 번만 클론하고 각 프로젝트가 그 위치를 가리키게 합니다 — 복사본 없음, 버전 어긋남 없음.
+**인-레포 모델(기본):** 클론 하나가 곧 작업 폴더입니다 — 컨버전은 툴킷 클론 **안에서** 진행됩니다.
 ```
-git clone https://github.com/MendixMau/mxcli-project-toolkit.git ~/Mendix/mxcli-project-toolkit
+git clone https://github.com/MendixMau/mxcli-project-toolkit.git
 ```
-각 프로젝트의 CLAUDE.md가 `~/Mendix/mxcli-project-toolkit`을 참조합니다. 업데이트는 `git pull`로 받습니다.
-자체 완결형 인계가 필요하면 대신 git submodule로 추가하세요. JS 툴체인은 **bun 전용**입니다(런타임 + 패키지 매니저) — 파이프라인별로 `pipelines/<x>/pipeline` 안에서 `bun install`을 실행하세요(node_modules는 gitignore 처리됨).
+컨버전별 산출물은 전부 커밋 제외(gitignore) 영역에 놓입니다: `sources/<이름>/`(원본), `analysis/<이름>/`(모든 분석·설계 산출물 + 빌드 계획), `mendix/<이름>/`(대상 .mpr — 5단계에서 mxcli로 생성), 루트 `CLAUDE.local.md`(프로젝트 컨텍스트 — Claude Code가 `CLAUDE.md`와 함께 자동 로드), `.claude/agents/`(프로젝트 서브에이전트). 실행 절차는 루트의 `CONVERSION-RUNBOOK.md`를 따르고, 툴킷 업데이트는 `git pull`로 받습니다. 인계가 필요하면 클론 통째로 전달하되, 커밋 제외 영역은 별도로 복사해야 함을 기억하세요. JS 툴체인은 **bun 전용**입니다(런타임 + 패키지 매니저) — 파이프라인별로 `pipelines/<x>/pipeline` 안에서 `bun install`을 실행하세요(node_modules는 gitignore 처리됨).
 
-### Baseline routing — 모든 새 프로젝트의 CLAUDE.md에 복사해 넣을 것
+### Baseline routing — 모든 컨버전의 프로젝트 컨텍스트(CLAUDE.local.md)에 복사해 넣을 것
 
-위의 "어떤 스킬을 언제 쓰는가" 표는 *상황 의존적*입니다 — 특정 작업이 필요로 할 때 스킬을 로드합니다. 하지만 몇몇 스킬은 작업과 무관하게 **모든** MDL 작성 세션에 적용되며, 상황 기반 발견 방식으로는 조용히 놓치게 됩니다. 작업 중에 그것들을 로드하라고 일러주는 계기가 없기 때문입니다. 이 툴킷을 사용하는 모든 프로젝트의 `CLAUDE.md`(또는 MDL 작성 전에 읽을 것을 에이전트에게 지시하는 문서, 예: 자체 `write-microflows.md`)는 우연히 마주치기를 기대하지 말고 아래 항목을 직접 참조해야 합니다:
+위의 "어떤 스킬을 언제 쓰는가" 표는 *상황 의존적*입니다 — 특정 작업이 필요로 할 때 스킬을 로드합니다. 하지만 몇몇 스킬은 작업과 무관하게 **모든** MDL 작성 세션에 적용되며, 상황 기반 발견 방식으로는 조용히 놓치게 됩니다. 작업 중에 그것들을 로드하라고 일러주는 계기가 없기 때문입니다. 모든 컨버전의 프로젝트 컨텍스트 `CLAUDE.local.md`(또는 MDL 작성 전에 읽을 것을 에이전트에게 지시하는 문서, 예: 자체 `write-microflows.md`)는 우연히 마주치기를 기대하지 말고 아래 항목을 직접 참조해야 합니다:
 
 | 항상 해당되는 상황 | 참조할 파일 |
 |---|---|
@@ -210,13 +209,13 @@ git clone https://github.com/MendixMau/mxcli-project-toolkit.git ~/Mendix/mxcli-
 | 새 프로젝트의 개발 프로세스 서브에이전트 구성 | `skills/agent-roles.md` — 프로젝트 시작 시 한 번, "필요할 때"가 아님 |
 | BRD가 생성되기 전, 추출 파이프라인 선택(재사용 vs 신규 구축) | `skills/source-triage.md` |
 
-**이것이 암묵적이 아니라 명시적이어야 하는 이유:** 프로젝트 자체의 스킬 파일은 대개 해당 툴킷 학습이 존재하기 전에, 또는 나중에 새 학습이 추가되기 전에 작성됩니다 — 그 파일들이 저절로 새 학습에 대한 상호 참조를 갖게 되는 일은 없습니다. 이 툴킷을 `git pull`해서 새로운 baseline급 스킬(대개 새 `learned-*.md`)이 들어오면, 이 툴킷을 사용하는 모든 프로젝트의 라우팅을 그에 맞게 업데이트하세요 — 다음 세션이 우연히 발견하리라 기대하지 마세요.
+**이것이 암묵적이 아니라 명시적이어야 하는 이유:** 프로젝트 자체의 스킬 파일은 대개 해당 툴킷 학습이 존재하기 전에, 또는 나중에 새 학습이 추가되기 전에 작성됩니다 — 그 파일들이 저절로 새 학습에 대한 상호 참조를 갖게 되는 일은 없습니다. 이 툴킷을 `git pull`해서 새로운 baseline급 스킬(대개 새 `learned-*.md`)이 들어오면, 진행 중인 컨버전의 `CLAUDE.local.md` 라우팅을 그에 맞게 업데이트하세요 — 다음 세션이 우연히 발견하리라 기대하지 마세요.
 
-**클론 후에는 로컬 소스 경로를 설정하세요** — `pipelines/<x>/pipeline/config.json`에서. 커밋된 파일은 `<placeholder>` 값으로 배포되므로, 본인의 소스 워크스페이스를 가리키게 수정하세요. 실제 로컬 경로는 절대 커밋하지 마세요.
+**추출을 시작하기 전에 로컬 소스 경로를 설정하세요** — `pipelines/<x>/pipeline/config.json`에서. 커밋된 파일은 `<placeholder>` 값으로 배포되므로, 소스 폴더(`sources/<이름>/`)와 분석 폴더의 `knowledge-base`를 가리키게 수정하세요. 이 수정은 로컬 전용입니다 — 실제 로컬 경로는 절대 커밋하지 마세요(커밋 경계의 유일한 예외인 추적 파일 로컬 수정).
 
-**프로젝트 산출물은 여기 두지 않습니다** (`analysis/`, `sources/`, `knowledge-base/`, `*.mpr`는 gitignore 처리) — 각 마이그레이션은 이 저장소를 참조하는 자체 워크스페이스에서 실행됩니다.
+**프로젝트 산출물은 커밋하지 않습니다** — 컨버전은 이 클론 안에서 진행되지만 `analysis/`, `sources/`, `mendix/`, `knowledge-base/`, `*.mpr`, `CLAUDE.local.md`, `.claude/agents/`는 gitignore로 커밋에서 제외됩니다. 커밋되는 것은 재사용 자산(스킬, 버그 로그, 런북·파이프라인 개선)뿐입니다.
 
-**빌드 계획과 세션 노트는 각자의 프로젝트에 두고, 여기 두지 않습니다.** 이 저장소는 재사용 가능한 도구 + 스킬 + 소규모 엄선 예시만 담습니다. 프로젝트의 아키텍처 청사진, 번호 매겨진 빌드 계획, 미해결 이슈 목록, 진행 중인 세션 일지는 그 프로젝트 자체의 저장소에 속하며(예: 프로젝트 루트의 `architecture/build-plan.md`, `SESSION-NOTES.md`) — 절대 툴킷으로 커밋해 되돌려 보내지 마세요. 그 계획에서 나온 패턴이 프로젝트 전반에서 재사용 가능하다고 판명되면, 계획 전체를 남겨두는 대신 여기의 `skills/learned-*.md` 파일로 승격하세요.
+**빌드 계획과 세션 노트는 분석 폴더에 둡니다.** 프로젝트의 아키텍처 청사진, 번호 매겨진 빌드 계획, 미해결 이슈 목록, 진행 중인 세션 일지는 `analysis/<이름>/`(예: `analysis/<이름>/architecture/build-plan.md`)에 속하며 — 커밋 제외 영역이므로 저장소 히스토리를 오염시키지 않습니다. 절대 툴킷으로 커밋해 되돌려 보내지 마세요. 그 계획에서 나온 패턴이 프로젝트 전반에서 재사용 가능하다고 판명되면, 계획 전체를 커밋하는 대신 `skills/learned-*.md` 파일로 승격하세요.
 
 ## 사용처
 

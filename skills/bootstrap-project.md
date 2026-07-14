@@ -5,6 +5,18 @@
 
 ---
 
+## File Target — In-Repo Conversion Model
+
+In this toolkit's in-repo conversion model (see `CONVERSION-RUNBOOK.md`), the file this skill
+produces is **`CLAUDE.local.md` at the toolkit root — NOT `CLAUDE.md`**. The root `CLAUDE.md`
+is the toolkit's own committed file and must never be overwritten or extended with project
+facts. Claude Code auto-loads `CLAUDE.local.md` alongside `CLAUDE.md`, and it is gitignored,
+so one clone carries exactly one active conversion's context. Every mention of "the project's
+`CLAUDE.md`" below means this file. (Only when a conversion genuinely runs in a separate,
+dedicated workspace — not the toolkit clone — does a plain `CLAUDE.md` there apply.)
+
+---
+
 ## When to Use This Skill
 
 - Starting a brand-new mxcli-powered project (migration or greenfield) and setting up its `CLAUDE.md` for the first time

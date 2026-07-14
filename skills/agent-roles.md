@@ -1,6 +1,6 @@
 # Agent Roles — Draft / Gate / Test Split for mxcli Projects
 **Purpose:** How to generate a project's `.claude/agents/*.md` subagent definitions so MDL drafting, post-exec verification, and UI testing are separate agents with separate tool rights — instead of one agent doing everything, including unreviewed writes to the `.mpr`.
-**Upstream:** `bootstrap-project.md` — run that first if the project's `CLAUDE.md` doesn't exist yet or hasn't been checked against Baseline routing; this skill's Step 1 ("read the target project first") depends on that being reliable.
+**Upstream:** `bootstrap-project.md` — run that first if the project context doesn't exist yet or hasn't been checked against Baseline routing; this skill's Step 1 ("read the target project first") depends on that being reliable. (In the in-repo conversion model the project context is `CLAUDE.local.md` at the toolkit root, not a project `CLAUDE.md` — see that skill's "File Target" note.)
 **Companion skills:** `iterative-build-loop.md` (the gate/build/test discipline this pattern makes executable), `mdl-cookbook-microflows.md`, `bug-logs/mxcli-bugs.md`, `test-app.md`
 **Source:** Generalized from three project-specific agents built for a live mxcli project (IVM-MxCLI-main), after real use.
 
@@ -12,7 +12,7 @@
 - You're asked to "set up agents for this project" or "create dev-process agents" on a fresh repo.
 - An existing project's agents feel ad hoc or over-permissioned (e.g. one agent can both write MDL and run `mxcli exec`).
 
-**This is a generation guide, not a copy-paste template.** The three example bodies below are illustrative shapes — read the target project's own CLAUDE.md and skills first, then write agent files that match *that* project's actual commands, paths, and tooling. A gate-agent pointed at the wrong `.mpr` filename or a stale compile-gate command silently verifies nothing.
+**This is a generation guide, not a copy-paste template.** The three example bodies below are illustrative shapes — read the target project's own context (`CLAUDE.local.md`) and skills first, then write agent files that match *that* project's actual commands, paths, and tooling. A gate-agent pointed at the wrong `.mpr` filename or a stale compile-gate command silently verifies nothing.
 
 ---
 
@@ -34,7 +34,7 @@ This mirrors `iterative-build-loop.md`'s gate discipline (0 CE errors + happy pa
 
 ## How to generate these for a new project
 
-1. **Read the target project first**: its `CLAUDE.md`, `.ai-context/skills/` (or equivalent), and whatever it uses for build verification (mx check / mxbuild / lint), UI testing (Playwright integration, demo users), and business-rule source (BRDs, a requirements doc, or none yet). Don't guess any of this — if the project has no test setup yet, say so instead of inventing one.
+1. **Read the target project first**: its project context (`CLAUDE.local.md` at the toolkit root in the in-repo model, plus the toolkit `CLAUDE.md`), `.ai-context/skills/` (or equivalent), and whatever it uses for build verification (mx check / mxbuild / lint), UI testing (Playwright integration, demo users), and business-rule source (BRDs, a requirements doc, or none yet). Don't guess any of this — if the project has no test setup yet, say so instead of inventing one.
 2. **Write three files** to `.claude/agents/`: `mdl-agent.md`, `gate-agent.md`, `test-agent.md`, adapting the shapes below — substitute every project-specific detail (mpr filename, exact check/compile/lint commands, skill file names, BRD/spec location, demo user, known gotchas) for the real ones you just read.
 3. **Preserve the tool scoping exactly**: `tools: Read, Grep, Glob, Bash` on all three, and an explicit line in each stating it never runs `mxcli exec` / never mutates the `.mpr` directly.
 4. **Report back** which three files you wrote, and flag any assumption you had to make because the project didn't document something (e.g. "assumed the demo user is X — couldn't find one specified, confirm").

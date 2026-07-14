@@ -982,3 +982,100 @@ The statement executes and reports success ("Updated configuration 'Default'"). 
 
 ### Recovery
 `git checkout` the two tracked `mprcontents/*.mxunit` files for the Settings unit back to the last clean commit. No full project revert needed — only those unit files are corrupted.
+
+---
+
+## BUG-23: `COMMIT ... ON ERROR CONTINUE` — mxcli accepts but writes unsupported error-handling type → CE6035
+
+**Severity:** Medium — script passes check, fails only at mxbuild gate
+**Reproducible:** Yes, consistently
+**Mendix version:** 11.12.0 · **mxcli:** nightly-5-gde72c03d
+**Discovered:** 2026-07-13, Non-SAP-KT-source 05a (race-absorption commit on a lock entity)
+
+### Symptom
+`mxcli check` passes `COMMIT $Obj ON ERROR CONTINUE;`. mxbuild then reports
+`CE6035 Error handling type is not supported` on the Commit activity — Mendix does not
+allow Continue-type error handling on Commit.
+
+### Workaround (verified)
+Use a custom handler block instead — maps to custom error handling and passes mxbuild:
+```
+COMMIT $Obj ON ERROR {
+  LOG WARNING NODE 'Module' 'race absorbed';
+};
+```
+
+---
+
+## BUG-24: `CREATE OR MODIFY MICROFLOW` wires End event to the RETURNS alias variable → CE0109/CE0108
+
+**Severity:** Medium — replacement path only; plain CREATE unaffected
+**Reproducible:** Yes, consistently
+**Mendix version:** 11.12.0 · **mxcli:** nightly-5-gde72c03d
+**Discovered:** 2026-07-13, Non-SAP-KT-source 05a2/05a3 fix chain
+
+### Symptom
+A microflow created with plain `CREATE MICROFLOW ... RETURNS String AS $Alias ... RETURN <expression>;`
+builds clean. Re-stating the same flow via `CREATE OR MODIFY` produces an End event bound to the
+alias variable: mxbuild reports `CE0109 Undefined variable '<Alias>'` (alias never assigned), and
+declaring the alias just before the final RETURN shifts it to `CE0108 defined but not in scope at
+this location` (an end-event location precedes the declare).
+
+### Workaround (verified)
+In any `CREATE OR MODIFY` microflow with a RETURNS alias: declare the alias variable **as the first
+statement of the flow**, `SET` it before returning, and `RETURN $Alias` (not an expression):
+```
+RETURNS String AS $NewItemCd ... BEGIN
+  DECLARE $NewItemCd String = '';
+  ...
+  SET $NewItemCd = $Prefix + $SerialPadded;
+  RETURN $NewItemCd;
+END;
+```
+
+### Related version notes (same session, minor)
+- `reset layout` (learned-microflow-patterns LESSON-01+02) is NOT in this mxcli build's grammar —
+  RETURNS clause accepts only `{BEGIN, FOLDER, COMMENT}`. The lesson is version-dependent.
+- `@annotation` as the FIRST element of an `ELSE` block is a parse error (THEN-first placement is
+  fine) — parser exits the statement and cascades misleading top-level errors.
+
+### BUG-21 status update (2026-07-13)
+**Verified working on mxcli nightly-5-gde72c03d + Mendix 11.12.0 (GA):** `CHANGE $Item (Module.Assoc = $RetrievedObj)` — 같은 모듈 연관 4건을 CREATE OR MODIFY MICROFLOW로 기록, mxbuild BUILD SUCCEEDED(Error 0) + Studio Pro 로드 정상(Errors 0) 확인 (Non-SAP-KT-source 05b, 통제 검증: 스냅샷+게이트+SP 재오픈). 원 확인 환경은 구 mxcli + 11.12.0 Beta(2026-07-06). **단일 시나리오 검증**이므로 구버전 mxcli 사용 시 STOP 유지 — nightly-5 이상에서는 mxbuild 게이트+SP 로드 확인을 전제로 직접 경로 허용.
+
+---
+
+## BUG-25: `DOWNLOAD FILE $doc;` — mxcli accepts syntax but writes an EMPTY action activity → CE0008
+
+**Severity:** Medium — flow builds a no-op activity; caught only at mxbuild gate
+**Reproducible:** Yes
+**Mendix version:** 11.12.0 · **mxcli:** nightly-5-gde72c03d
+**Discovered:** 2026-07-13, Non-SAP-KT-source 06 (ACT_Item_ExportExcel)
+
+### Symptom
+`DOWNLOAD FILE $ExcelDoc;` passes `mxcli check` (write-microflows.md documents the syntax), but the
+written model contains an action activity with **no action** — `DESCRIBE MICROFLOW` round-trips it as
+`-- Empty action`, and mxbuild reports `CE0008 No action defined`.
+
+### Workaround
+Patch the empty activity into a `Microflows$DownloadFileAction` via MCP `ped_update_document`
+(single-activity JSON patch — SP must be open). Record the patch as an `NN-mcp-*.mdl` record file.
+
+---
+
+## BUG-26: Studio Pro MCP `pg_patch_page` — failed operation PARTIALLY MUTATES the in-memory page (wipes Main content) (CRITICAL)
+
+**Severity:** Critical — in-memory model damage; becomes permanent if saved
+**Reproducible:** Observed once (variable-form parameterMapping add op)
+**Environment:** Studio Pro 11.12.0 MCP server (7782) · 2026-07-13, Non-SAP-KT-source
+**Symptom:** `pg_patch_page` add-op returned `OPERATION_PROCESSING_ERROR: An element of type 'False' cannot be converted to a 'System.Guid'` — and a subsequent `pg_read_page` showed the page's Main content array EMPTY (all widgets gone in memory). Disk was unaffected (no save).
+**Recovery:** kill Studio Pro WITHOUT saving → stale `.mpr.lock` 삭제 → disk state verified intact.
+**Rule:** treat a failed `pg_patch_page` as suspect state — `pg_read_page`로 즉시 재확인하고, 손상 시 저장 금지 + SP 종료(디스크 보존). 저장 전 검증 없이는 연속 패치 금지.
+
+---
+
+## BUG-27: mxcli page writer drops `parameterMappings` on page-button microflow actions → CE1571
+
+**Severity:** Medium — silently empty mappings; CE only for params without a context default
+**Reproducible:** Yes · **mxcli:** nightly-5-gde72c03d · **Discovered:** 2026-07-13 (07 UserSelect_Popup)
+**Symptom:** `actionbutton (action: microflow MF("A": $PageParam, "B": $currentObject))` passes check/exec, but the written `MicroflowSettings.parameterMappings` is `[]`. Params resolvable from the enclosing data context (B) get auto-defaulted by SP; page-parameter args (A) surface CE1571 "No argument has been selected".
+**Workaround:** Studio Pro GUI — open the button's On click, select the argument manually (1분). MCP pg_patch_page 경로는 BUG-26 리스크로 이 빌드에서 비권장.

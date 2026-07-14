@@ -47,16 +47,16 @@ BRD scaffold exists to cross-reference against.
 
 ---
 
-## Project Workspace Convention
+## Project Workspace Convention (in-repo model)
 
-**A pipeline tool repo (`os-migration-pipeline`, `java-angular-migration-skills`, future ones)
-must never accumulate project-specific output inside its own directory tree.** Every project
-gets its own workspace folder, kept entirely separate from the reusable tool:
+**Pipeline tooling must never accumulate project-specific output in committed history.**
+Conversions run inside the toolkit clone itself; every project gets per-name areas that are
+all gitignored, so they never enter the toolkit's git history:
 
 ```
-<workspace-root>/
-  sources/<source-repo-name>/          ← raw cloned/copied source, untouched
-  analysis/<source-repo-name>/         ← ALL project-specific output lives here
+mxcli-project-toolkit/                 ← toolkit clone = the working folder
+  sources/<source-repo-name>/          ← raw cloned/copied source, untouched (gitignored)
+  analysis/<source-repo-name>/         ← ALL project-specific output lives here (gitignored)
     architecture.md                     ← hand-written findings (Phase 1, optional but recommended)
     knowledge-base/                     ← everything the pipeline generates (Phase 2–4)
       extracted/                        ← raw per-extractor JSON
@@ -65,8 +65,9 @@ gets its own workspace folder, kept entirely separate from the reusable tool:
       brd/                              ← Phase 3 scaffolds + Phase 4 enriched BRDs
       extraction-report.html            ← raw extraction/gap dashboard
       enrichment-summary.html           ← business-facing summary
-  os-migration-pipeline/                ← reusable tool, NO project-specific data
-  java-angular-migration-skills/        ← reusable tool, NO project-specific data
+  mendix/<source-repo-name>/           ← target Mendix project (.mpr), created at stage 5 (gitignored)
+  pipelines/outsystems/                ← reusable tool, committed — NO project-specific data
+  pipelines/java-angular/              ← reusable tool, committed — NO project-specific data
 ```
 
 Rules:
@@ -74,16 +75,16 @@ Rules:
 1. Every pipeline's `config.json` must have a `knowledgeBaseDir` field pointing at
    `analysis/<source-repo-name>/knowledge-base` — every script (extractors, merger, `run.js`,
    both report generators) reads its output location from `config.json`, never a hardcoded
-   path relative to the tool's own `__dirname`.
+   path relative to the tool's own `__dirname`. Setting local paths in `config.json` is a
+   local-only edit of a tracked file — never commit it.
 2. Starting a new project always begins with creating `analysis/<source-repo-name>/` (mirroring
-   `sources/<source-repo-name>/` if a clone exists) *before* running anything, then pointing
+   `sources/<source-repo-name>/`) *before* running anything, then pointing
    `knowledgeBaseDir` there.
-3. A tool repo may still fall back to a local `knowledge-base/` when `config.json` has no
+3. A pipeline may still fall back to a local `knowledge-base/` when `config.json` has no
    `knowledgeBaseDir` set — that's gitignored scratch space for quick standalone testing, never the
    documented way to actually run an analysis.
-4. This is why the tool repo can stay genuinely downloadable/reusable per
-   `os-migration-pipeline`'s own README ("clone and run" quickstart) — a fresh clone of the
-   tool never has to be cleaned of a previous project's BRDs/reports before reuse.
+4. This is why the toolkit stays genuinely downloadable/reusable — a fresh clone never
+   contains a previous project's sources/BRDs/reports, because none of them are committed.
 
 ---
 
