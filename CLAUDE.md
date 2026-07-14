@@ -28,9 +28,6 @@ Load skill files **on demand when the task calls for it** — not all upfront.
 | Generating a conversion's project context `CLAUDE.local.md` (Baseline routing + project-specific facts) | `skills/bootstrap-project.md` |
 | Setting up dev-process subagents (draft/gate/test) on a new project | `skills/agent-roles.md` |
 
-## Conversion runbook (user-facing, not a skill)
-`CONVERSION-RUNBOOK.md` (repo root) is the **user-facing** checklist of example prompts a human types into the agent, stage by stage (P → 0–6), to run any conversion end-to-end. It is not a skill — do not load it as task guidance. Runbook prompts intentionally contain **no skill paths**: when the user pastes a runbook stage prompt (a task with named outputs and gates), select and read the right skills yourself via the routing tables (the table above + Baseline routing), then execute the stage. Treat the runbook's gates (✋ = user sign-off required) as binding.
-
 ## Pipelines (extraction tooling — code lives in this repo)
 The source-specific extraction pipelines now live **in this repo** under `pipelines/`:
 
@@ -42,14 +39,14 @@ The source-specific extraction pipelines now live **in this repo** under `pipeli
 **JS toolchain is bun-only** (runtime + package manager + `bunx`) — do not assume node/npm are installed. `node_modules/` is gitignored — run `bun install` locally per pipeline. Curated sample outputs live under each pipeline (e.g. `pipelines/outsystems/sample-outputs/`).
 
 ## Running conversions (in-repo model)
-Conversions run **inside this clone** — the toolkit repo itself is the working folder (see `CONVERSION-RUNBOOK.md`). Per-conversion areas are gitignored and never committed:
+Conversions run **inside this clone** — the toolkit repo itself is the working folder. Per-conversion areas are gitignored and never committed:
 - `sources/<name>/` — source input, read-only
 - `analysis/<name>/` — all analysis/design output (intake, KB, BRD, `architecture/` incl. build plan, `design/`, session notes)
-- `mendix/<name>/` — target Mendix project (`.mpr`), created at stage 5-0 via mxcli
+- `mendix/<name>/` — target Mendix project (`.mpr`), created at the build stage via mxcli
 - `CLAUDE.local.md` (repo root) — per-conversion project context (paths, tool versions, project facts). **Never write project facts into this CLAUDE.md** — it is the toolkit's committed file; Claude Code auto-loads `CLAUDE.local.md` alongside it.
 - `.claude/agents/` — per-project dev-process subagents
 
-**Commit boundary:** only reusable assets are committed (skills, bug logs, runbook/pipeline improvements). The one tolerated local-only change to a tracked file is `pipelines/<x>/pipeline/config.json` local paths — never commit it. Any other project file showing in `git status` means the setup is broken (runbook P-1 item 4 fixes it).
+**Commit boundary:** only reusable assets are committed (skills, bug logs, pipeline improvements). The one tolerated local-only change to a tracked file is `pipelines/<x>/pipeline/config.json` local paths — never commit it. Any other project file showing in `git status` means the setup is broken.
 
 **A conversion's build plan and session notes live in its `analysis/<name>/` area (gitignored), never in commits.** Promote a reusable pattern into `skills/learned-*.md` instead of committing a project's plan.
 

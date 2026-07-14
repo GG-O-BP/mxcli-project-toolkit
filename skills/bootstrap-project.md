@@ -7,7 +7,7 @@
 
 ## File Target — In-Repo Conversion Model
 
-In this toolkit's in-repo conversion model (see `CONVERSION-RUNBOOK.md`), the file this skill
+In this toolkit's in-repo conversion model, the file this skill
 produces is **`CLAUDE.local.md` at the toolkit root — NOT `CLAUDE.md`**. The root `CLAUDE.md`
 is the toolkit's own committed file and must never be overwritten or extended with project
 facts. Claude Code auto-loads `CLAUDE.local.md` alongside `CLAUDE.md`, and it is gitignored,
